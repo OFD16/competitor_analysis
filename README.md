@@ -3,7 +3,11 @@
 This is a Etsy, competitor analysis program.
 
 ## Getting Started
+```
+flutter run -d emulator-5554
 
+flutter run -d windows
+```
 This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:
