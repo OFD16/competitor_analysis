@@ -1,9 +1,3 @@
-import 'dart:io';
-
-import 'package:competitor_analysis/screens/list_items.dart';
-import 'package:competitor_analysis/screens/web_view_dekstop.dart';
-import 'package:competitor_analysis/screens/web_view_mobile.dart';
-
 import 'package:web_scraper/web_scraper.dart';
 
 import 'package:html/parser.dart' show parse;
@@ -302,17 +296,17 @@ class _HomeScreenState extends State<HomeScreen> {
           body: TabBarView(
             children: [
               Feed(onPress: fetchDocument),
-              ListItemsScreen(
-                items: [],
-                onPress: fetchDocument,
-              ),
-              Container(
-                child: Platform.isAndroid
-                    ? const WebViewMobileScreen()
-                    : Platform.isWindows
-                        ? WebViewDesktopScreen()
-                        : null,
-              ),
+              // ListItemsScreen(
+              //   items: [],
+              //   onPress: fetchDocument,
+              // ),
+              // Container(
+              //   child: Platform.isAndroid
+              //       ? const WebViewMobileScreen()
+              //       : Platform.isWindows
+              //           ? WebViewDesktopScreen()
+              //           : null,
+              // ),
             ],
           ),
         ),

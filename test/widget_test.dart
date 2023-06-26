@@ -28,3 +28,27 @@ void main() {
     expect(find.text('1'), findsOneWidget);
   });
 }
+
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter_test/flutter_test.dart';
+
+// import 'package:my_flutter_app/main.dart';
+
+// void main() {
+//   testWidgets('Example Widget Test', (WidgetTester tester) async {
+//     // Build the widget
+//     await tester.pumpWidget(MyApp());
+
+//     // Perform widget testing
+//     expect(find.text('Welcome to MyApp'), findsOneWidget);
+//     expect(find.byType(RaisedButton), findsNWidgets(2));
+
+//     // Interact with widgets
+//     await tester.tap(find.byType(RaisedButton).first);
+//     await tester.pump();
+
+//     // Verify the changes
+//     expect(find.text('Button Pressed: 1'), findsOneWidget);
+//   });
+// }
