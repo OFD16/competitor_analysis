@@ -34,17 +34,22 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.home),
             title: const Text('Dashboard'),
-            body: const Text('A'),
+            body: const Text('Dashboard'),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.link),
             title: const Text('Analyze'),
-            body: const Text('b'),
+            body: const Text('Analyze'),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.reminder_person),
             title: const Text('Profile'),
-            body: const Text('c'),
+            body: const Text('Profile'),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.settings),
+            title: const Text('Settings'),
+            body: const Text('Settings'),
           ),
         ],
         selected: _currentPage,
