@@ -1,7 +1,7 @@
 library app_screens;
 
-export '../screens/home_screen.dart' show HomeScreen;
-export '../screens/analysis_screen.dart' show AnalysisScreen;
-export '../screens/profile_screen.dart' show ProfileScreen;
-export '../screens/settings_screen.dart' show SettingsScreen;
-export '../screens/dashboard_screen.dart' show DashboardScreen;
+export './home_screen.dart' show HomeScreen;
+export './analysis_screen.dart' show AnalysisScreen;
+export './profile_screen.dart' show ProfileScreen;
+export './settings_screen.dart' show SettingsScreen;
+export './dashboard_screen.dart' show DashboardScreen;
