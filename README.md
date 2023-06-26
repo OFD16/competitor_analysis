@@ -14,7 +14,16 @@ A few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- [UI SOURCE: Fluent_ui](https://github.com/bdlukaa/fluent_ui)
+<a title="Made with Fluent Design" href="https://github.com/bdlukaa/fluent_ui">
+  <img
+    src="https://img.shields.io/badge/fluent-design-blue?style=flat-square&color=gray&labelColor=0078D7"
+  >
+</a>
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+For some issues:
+- If you against to some Fluent_ui errors when running on dekstop app. You can check your flutter channel ```flutter channel``` and if its not in stable channel you cna swich your channel with ```flutter channel stable``` command and after that run ```flutter upgrade```.
+- Enable desktop support, on project root run this commands:
+ ```flutter config --enable-windows-desktop```
+```flutter config --enable-macos-desktop```
+```flutter config --enable-linux-desktop```

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:competitor_analysis/my_app.dart' as app;
+import './screens/index.dart' as screens;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,32 +12,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return FluentApp(
       title: 'Competitor Analyzer',
       theme: app.AppTheme.lightTheme, // Set light theme as the default
       darkTheme: app.AppTheme.darkTheme, // Set dark theme
       debugShowCheckedModeBanner: false,
-      home: const app.HomeScreen(),
+      home: const screens.HomeScreen(),
     );
   }
 }
-
-// theme: ThemeData(
-//         colorScheme: ColorScheme.fromSeed(
-//           seedColor: Colors.deepPurple,
-//           background: const Color(0xff2c3837),
-//           surface: const Color(0xff2c3837),
-//           // primary: Colors.red,
-//           // onPrimary: Colors.red,
-//           primaryContainer: Colors.deepPurple, // floating action button color
-//           // secondary: Colors.red,
-//           // onPrimaryContainer: Colors.deepPurple,
-//           // secondaryContainer: Colors.deepPurple,
-//           // tertiaryContainer: Colors.deepPurple,
-//           // secondaryContainer: Colors.red,
-//           // onSecondaryContainer: Colors.red,
-//           // tertiary: Colors.green,
-//           // tertiaryContainer: Colors.red,
-//         ),
-//         useMaterial3: true,
-//       ),

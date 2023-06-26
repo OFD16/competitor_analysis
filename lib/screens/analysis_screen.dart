@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 class AnalysisScreen extends StatelessWidget {
-  const AnalysisScreen({super.key});
+  const AnalysisScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return const Text('AnaliysisScreen');
   }
 }
