@@ -14,7 +14,22 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Competitor Analyzer',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          background: const Color(0xff2c3837),
+          surface: const Color(0xff2c3837),
+          // primary: Colors.red,
+          // onPrimary: Colors.red,
+          primaryContainer: Colors.deepPurple, // floating action button color
+          // secondary: Colors.red,
+          // onPrimaryContainer: Colors.deepPurple,
+          // secondaryContainer: Colors.deepPurple,
+          // tertiaryContainer: Colors.deepPurple,
+          // secondaryContainer: Colors.red,
+          // onSecondaryContainer: Colors.red,
+          // tertiary: Colors.green,
+          // tertiaryContainer: Colors.red,
+        ),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
