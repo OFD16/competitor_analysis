@@ -1,11 +1,12 @@
 import "package:fluent_ui/fluent_ui.dart";
 
-import 'package:web_scraper/web_scraper.dart';
-
-import 'package:html/parser.dart' show parse;
-
 import '../models/index.dart' as models;
 import '../widgets/index.dart' as components;
+import '../themes/constants.dart' show Constants;
+
+import 'package:web_scraper/web_scraper.dart';
+import 'package:intl/intl.dart';
+import 'package:html/parser.dart' show parse;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -30,24 +31,109 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   late models.Product etsyObj = models.Product();
 
-  // models.Product etsyObj = {
-  //   "title": "",
-  //   "description": "",
-  //   "price": "",
-  //   "discountPrice": "",
-  //   "discountRate": "",
-  //   "imageUrl": "",
-  //   "shopOwnerName": "",
-  //   "shopUrl": "",
-  //   "shopName": "",
-  //   "productCommentCount": "",
-  //   "shopCommentCount": "",
-  //   "reviews": [],
-  // };
-
   String extractUrl(String url) {
     final uri = Uri.parse(url);
     return uri.path + (uri.query.isNotEmpty ? '?' + uri.query : '');
+  }
+
+  String extractTextContent(String htmlString, String cssSelector) {
+    final document = parse(htmlString);
+    final element = document.querySelector(cssSelector);
+    return element?.text?.trim() ?? '';
+  }
+
+  List<String> extractReviewersNames(
+      String htmlString, List<String> cssSelectors) {
+    final document = parse(htmlString);
+    List<String> textContentList = [];
+
+    for (String selector in cssSelectors) {
+      final elements = document.querySelectorAll(selector);
+
+      for (var element in elements) {
+        String textContent = element.text.trim();
+        textContentList.add(textContent);
+      }
+    }
+
+    return textContentList;
+  }
+
+  String extractAttribute(
+      String htmlString, String cssSelector, String attributeName) {
+    final document = parse(htmlString);
+    final element = document.querySelector(cssSelector);
+    return element?.attributes[attributeName] ?? '';
+  }
+
+  String extractDiscountRate(String htmlString, String cssSelector,
+      String startDelimiter, String endDelimiter,
+      {bool removeOffText = false}) {
+    String discountRateText = extractTextContent(htmlString, cssSelector);
+    final discountRateStartIndex = discountRateText.indexOf(startDelimiter);
+    final discountRateEndIndex = discountRateText.indexOf(endDelimiter);
+    String discountRate = discountRateText
+        .substring(discountRateStartIndex + 1, discountRateEndIndex)
+        .trim();
+    if (removeOffText) {
+      discountRate = discountRate.replaceAll('Off', '');
+    }
+    return discountRate;
+  }
+
+  String extractFormattedRating(String htmlString, String cssSelector) {
+    final document = parse(htmlString);
+    final ratingElement = document.querySelector(cssSelector);
+    final rating = ratingElement?.attributes['data-rating'];
+    final parsedRating = rating != null ? int.tryParse(rating) : null;
+    final formattedRating = parsedRating != null
+        ? '${5 - parsedRating} stars'
+        : 'Rating Not Available';
+    return formattedRating;
+  }
+
+  List<int> extractRatingsList(String htmlString, String cssSelector) {
+    final document = parse(htmlString);
+    final ratingElements = document.querySelectorAll(cssSelector);
+    final ratings = <int>[];
+    for (var element in ratingElements) {
+      final ratingText = element.text;
+      final rating = int.tryParse(ratingText.split(' ')[0]);
+      if (rating != null) {
+        ratings.add(rating);
+      }
+    }
+    return ratings;
+  }
+
+  List<String> extractReviewTexts(String htmlString, String cssSelector) {
+    final document = parse(htmlString);
+    final reviewElements = document.querySelectorAll(cssSelector);
+    final reviewTexts = <String>[];
+    for (var i = 0; i < 4 && i < reviewElements.length; i++) {
+      final element = reviewElements[i];
+      final reviewText = element.text.trim();
+      if (reviewText.isNotEmpty && !reviewText.contains(' out of 5 stars')) {
+        reviewTexts.add(reviewText);
+      }
+    }
+    return reviewTexts;
+  }
+
+  List<DateTime> extractDates(String htmlString, String cssSelector) {
+    final document = parse(htmlString);
+    final dateElements = document.querySelectorAll(cssSelector);
+    final dates = <DateTime>[];
+
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    for (var element in dateElements) {
+      final dateText = element.text.trim();
+      final date = dateFormat.parse(dateText);
+      dates.add(date);
+    }
+
+    return dates;
   }
 
   Future<dynamic> fetchDocument(String continueURL) async {
@@ -57,96 +143,118 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
       if (await webScraper.loadWebPage(continueURL)) {
         final res = webScraper.getPageContent();
-        final document = parse(res);
 
-        //final element = document.querySelector('$tagName.$className');
+        var title = extractTextContent(res, Constants.titleClassName); //Başlık
+        var description =
+            extractTextContent(res, Constants.descriptionClassName); //Açıklama
+        var price =
+            extractTextContent(res, Constants.priceClassName); //Tam fiyat
+        var discountPrice =
+            extractTextContent(res, Constants.discountPriceClassName)
+                .replaceAll(RegExp(r'^Price:\s*'), '');
+        ; //Indirimli fiyat
+        var shopOwnerName = extractTextContent(
+            res, Constants.shopOwnerNameClassName); //Mağaza sahibinin adı
+        var shopName =
+            extractTextContent(res, Constants.shopNameClassName); //Mağaza adı
+        var shopCommentCount = extractTextContent(
+            res, Constants.shopReviewCountClassName); //Mağaza yorum sayısı
+        var productCommentCount = extractTextContent(
+            res, Constants.productReviewCountClassName); //Ürün yorum sayısı
+//-----------------------------------------------------------------
+        var shopImageUrl = extractAttribute(
+            res, Constants.shopImageUrlClassName, 'src'); //Mağaza resim linki
+        var productImageUrl = extractAttribute(
+            res,
+            Constants.productFirstImageUrlClassName,
+            'src'); //Ürünün ilk resim linki
+        var shopUrl = extractAttribute(
+            res, Constants.shopUrlClassName, 'href'); //Mağazanın linki
+//-----------------------------------------------------------------
+        var discountRate = extractDiscountRate(
+            res, Constants.discountRateClassName, '(', ')',
+            removeOffText: true); //Indirim oranı
+//-----------------------------------------------------------------
+        //Reviews
+        List<String> cssSelectors = [
+          Constants
+              .reviewsUsernamesListClassName, //Yorumlardaki usernamelerin listesi
+        ];
+        List<String> extractedTextList =
+            extractReviewersNames(res, cssSelectors);
+        //print('extractedTextList: $extractedTextList');
 
-        // Extract the comment data.
-        // String className14 = 'div[data-test-id="Comment"]';
-        // var commentElements = document.querySelectorAll(className14);
-        // List<String> comments = [];
-        // for (var commentElement in commentElements) {
-        //   var comment = commentElement.querySelector('.Comment-text')?.text;
-        //   comments.add(comment!);
+        List<int> ratings = extractRatingsList(
+            res,
+            Constants
+                .reviewsRateListClassName); //Yorumlardaki userların rateingleri
+        //print('ratings: $ratings');
+
+        List<String> reviewTexts = extractReviewTexts(
+            res, Constants.reviewTextsClassName); //Yorumlardaki reviewslar
+        //print('reviewTexts: $reviewTexts');
+        // for (var reviewText in reviewTexts) {
+        //   print(reviewText);
         // }
 
-        // // Print the comment data.
-        // print(comments);
+        List<DateTime> dates =
+            extractDates(res, Constants.reviewDatesClassName);
+        //print('dates: $dates');
+        // for (var date in dates) {
+        //   print(date);
+        // }
+        //TODO: Alınan ürün title ı ve linki kaldı sonra paginated yorumları çekme
+        void extractLinkAndText(String html) {
+          final document = parse(html);
+          final linkElement = document.querySelector('a[data-transaction-id]');
+          final link = linkElement?.attributes['href'] ?? '';
+          final text = linkElement?.text ?? '';
 
-        //Başlık
-        String className12 = 'h1[data-buy-box-listing-title="true"]';
-        var titleElement = document.querySelector(className12);
-        var title = titleElement?.text.trim();
+          print('Link: $link');
+          print('Text: $text');
+        }
 
-        //Açıklama
-        String className3 = 'wt-text-body-01.wt-break-word';
-        final descriptionElement = document.querySelector('p.$className3');
-        final description = descriptionElement?.text.trim();
+        var productTitlesAndUrls = extractLinkAndText(res);
 
-        //Tam fiyat
-        String className2 = 'wt-text-strikethrough';
-        final priceElement = document.querySelector('span.$className2');
-        final price = priceElement?.text.trim();
+        // for (var entry in productTitlesAndUrls) {
+        //   print(entry);
+        // }
 
-        //Indirimli fiyat
-        String className5 = 'wt-text-title-03';
-        final discountPriceElement = document.querySelector('p.$className5');
-        final discountPrice = discountPriceElement?.text
-            .trim()
-            .replaceAll(RegExp(r'^Price:\s*'), '');
+        // List<models.Review> createReviewList(List<String> extractedTextList,
+        //     List<int> ratings, List<String> reviewTexts, List<DateTime> dates) {
+        //   final reviewList = <models.Review>[];
+        //   final ratingIterator = ratings.iterator;
 
-        //Indirim oranı
-        String className4 = 'wt-text-caption.wt-text-gray';
-        final discountRateElement = document.querySelector('p.$className4');
-        final discountRateText = discountRateElement?.text.trim();
-        final discountRateStartIndex = discountRateText!.indexOf('(');
-        final discountRateEndIndex = discountRateText.indexOf(')');
-        final discountRate = discountRateText
-            .substring(discountRateStartIndex + 1, discountRateEndIndex)
-            .trim();
+        //   for (var i = 0; i < extractedTextList.length; i++) {
+        //     final name = extractedTextList[i];
+        //     final rating =
+        //         ratingIterator.moveNext() ? ratingIterator.current : null;
+        //     final reviewText = reviewTexts[i];
+        //     final date = dates[i];
 
-        //Mağaza sahibi resmi
-        String className8 = 'div.wt-thumbnail-larger img';
-        var imageUrlElement = document.querySelector(className8);
-        var shopImageUrl = imageUrlElement?.attributes['src'];
+        //     final review = models.Review(
+        //         name: name,
+        //         rating: rating ?? 0,
+        //         reviewText: reviewText,
+        //         date: date);
+        //     reviewList.add(review);
+        //   }
 
-        //Ürünün ilk resmi
-        String className16 = 'img';
-        var productImageUrlElement = document.querySelector(className16);
-        var productImageUrl = productImageUrlElement?.attributes['src'];
+        //   return reviewList;
+        // }
 
-        //Mağaza sahibinin adı
-        String className9 = 'p.wt-text-body-03.wt-line-height-tight.wt-mb-lg-1';
-        var nameElement = document.querySelector(className9);
-        var shopOwnerName = nameElement?.text;
+        // List<models.Review> reviewList =
+        //     createReviewList(extractedTextList, ratings, reviewTexts, dates);
+        // print('reviewList: $reviewList');
+        // for (var review in reviewList) {
+        //   print('Name: ${review.name}');
+        //   print('Rating: ${review.rating}');
+        //   print('Review Text: ${review.reviewText}');
+        //   print('Date: ${review.date}');
+        //   print('---');
+        // }
 
-        //Mağazanın urli ve ismi
-        String className10 = 'a.wt-text-link[href*="shop"]';
-        var containerElement = document.querySelector(className10);
-        var shopUrl = containerElement?.attributes['href'];
-        var shopName = containerElement?.text;
-
-        String className15 =
-            'div.wt-content-toggle--truncated-inline-multi.wt-break-word wt-text-body-01"]';
-        var reviewsElement = document.querySelector(className15);
-        var reviews = reviewsElement?.text;
-
-        //Ürün yorum sayısı
-        String className11 = 'span.wt-badge.wt-badge--status-02.wt-ml-xs-2';
-        var productCommentCountElement = document.querySelector(className11);
-        var productCommentCount = productCommentCountElement?.text.trim();
-
-        //Mağaza yorum sayısı
-        String className13 =
-            'span.wt-badge.wt-badge--status-02.wt-ml-xs-2.wt-nowrap';
-        var shopCommentCountElement = document.querySelector(className13);
-        var shopCommentCount = shopCommentCountElement?.text.trim();
-
-        // print('//////////////////////////////////');
-        // print("reviewsElement $reviewsElement");
-        // print("reviews $reviews");
-        // print('//////////////////////////////////');
-
+//-----------------------------------------------------------------
         setState(() {
           loading = false;
           etsyObj.title = title;
@@ -162,8 +270,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           etsyObj.shopOwnerName = shopOwnerName;
           etsyObj.shopUrl = shopUrl;
         });
-
-        return document;
       }
 
       setState(() {
@@ -213,23 +319,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Container(
                 //   child: Text('sfad'),
                 // ),
-                components.ProductCard(),
-                Text('title: ${etsyObj.title}'), // title
+                components.ProductCard(
+                  product: etsyObj,
+                ),
                 // Text('description: ${etsyObj?.description}'), //description
-                Text('price: ${etsyObj.price}'), // price
-                Text('discountPrice: ${etsyObj.discountPrice}'), //discountprice
-                Text('discountRate: ${etsyObj.discountRate}'), //discounted rate
-                Text('imageUrl: ${etsyObj.productImageUrl}'), // imageUrl
-                Text('shopName: ${etsyObj.shopName}'), // shopName
-                Text(
-                    'shopOwnerName: ${etsyObj.shopOwnerName}'), // shopOwnerName
-                Text('shopUrl: ${etsyObj.shopUrl}'), // shopUrl
-                Text(
-                    'shopCommentCount: ${etsyObj.shopCommentCount}'), // shopCommentCount
-                Text(
-                    'productCommentCount: ${etsyObj.productCommentCount}'), // productCommentCount
-                Text(
-                    'reviews.length: ${etsyObj.reviews.length}'), // productCommentCount
               ],
             )
           else
@@ -239,3 +332,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+        // Extract the comment data.
+        // String className14 = 'div[data-test-id="Comment"]';
+        // var commentElements = document.querySelectorAll(className14);
+        // List<String> comments = [];
+        // for (var commentElement in commentElements) {
+        //   var comment = commentElement.querySelector('.Comment-text')?.text;
+        //   comments.add(comment!);
+        // }
+
+        // // Print the comment data.
+        // print(comments);
+
+//         //-----------------------------------------------------------------
+//         //İlk Review
+//         var reviewerName = extractTextContent(
+//             res, Constants.reviewerNameClassName); //Yorum yapanın adı
+
+//         var reviewDate = extractTextContent(
+//             res, Constants.reviewDateClassName); //Yorum yapma tarihi
+
+//         var reviewText = extractTextContent(
+//             res, Constants.reviewTextClassName); //Yorum metni
+
+//         var purchasedItem = extractTextContent(
+//             res, Constants.reviewerPurchasedItem); //Yorumdaki alınan ürün
+
+//         String extractRating(String htmlString, String cssSelector) {
+//           final document = parse(htmlString);
+//           final ratingElement = document.querySelector(cssSelector);
+//           final rating = ratingElement?.attributes['data-rating'];
+//           final parsedRating = rating != null ? int.tryParse(rating) : null;
+//           final formattedRating = parsedRating != null
+//               ? '${5 - parsedRating} stars'
+//               : 'Rating Not Available';
+//           return formattedRating;
+//         }
+
+//         var reviewRating = extractRating(res, Constants.reviewRate);
+
+// //-----------------------------------------------------------------
