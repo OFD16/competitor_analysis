@@ -27,3 +27,7 @@ For some issues:
  ```flutter config --enable-windows-desktop```
 ```flutter config --enable-macos-desktop```
 ```flutter config --enable-linux-desktop```
+
+For some other issues:
+- If your Flutter version is 3.10.5 adn Dart SDK version is 3.0.5 then you should downgrade to 3.7.11 or 3.7.8 it depends on your system.
+  ```flutter downgrade <flutter-version>```
