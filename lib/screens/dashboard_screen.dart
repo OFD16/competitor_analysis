@@ -5,6 +5,7 @@ import 'package:web_scraper/web_scraper.dart';
 import 'package:html/parser.dart' show parse;
 
 import '../models/index.dart' as models;
+import '../widgets/index.dart' as components;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -212,38 +213,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Container(
                 //   child: Text('sfad'),
                 // ),
-                ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Image.network(
-                        etsyObj.productImageUrl ??
-                            'https://thumbs.dreamstime.com/b/photo-camera-line-icon-image-photography-sign-picture-placeholder-symbol-quality-design-element-linear-style-photo-camera-icon-219079286.jpg',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    etsyObj.title ?? '',
-                    maxLines: 1,
-                  ),
-                  subtitle: Column(
-                    children: [
-                      Text('Fiyat: ${etsyObj.price}'),
-                      Text('İndirim Oranı: ${etsyObj.discountRate}'),
-                      Text('İndirimli Fiyat: ${etsyObj.discountPrice}'),
-                    ],
-                  ),
-                  trailing: Text('trailing'),
-                ),
-                Card(
-                    child: Text(
-                        'datasdasdatasdasdasdasdaadatasdasdasdasdaadasdasdaa')),
+                components.ProductCard(),
                 Text('title: ${etsyObj.title}'), // title
                 // Text('description: ${etsyObj?.description}'), //description
                 Text('price: ${etsyObj.price}'), // price
