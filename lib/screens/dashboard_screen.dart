@@ -22,7 +22,9 @@ late String continueURL;
 //     'listing/1260554960/notion-template-student-planner-academic?click_key=26f1b7030175d487b705f77fa4b4eda9904d0370%3A1260554960&click_sum=b7e6daf6&ref=related-2&pro=1&sts=1';
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  TextEditingController urlController = TextEditingController();
+  TextEditingController urlController = TextEditingController(
+      text:
+          'https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1');
   bool loading = false;
 
   late models.Product etsyObj = models.Product();
@@ -88,12 +90,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         //Indirimli fiyat
         String className5 = 'wt-text-title-03';
         final discountPriceElement = document.querySelector('p.$className5');
-        final discountPrice = discountPriceElement?.text.trim();
+        final discountPrice = discountPriceElement?.text
+            .trim()
+            .replaceAll(RegExp(r'^Price:\s*'), '');
 
         //Indirim oranı
         String className4 = 'wt-text-caption.wt-text-gray';
         final discountRateElement = document.querySelector('p.$className4');
-        final discountRateText = discountRateElement?.text?.trim();
+        final discountRateText = discountRateElement?.text.trim();
         final discountRateStartIndex = discountRateText!.indexOf('(');
         final discountRateEndIndex = discountRateText.indexOf(')');
         final discountRate = discountRateText
@@ -103,7 +107,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         //Mağaza sahibi resmi
         String className8 = 'div.wt-thumbnail-larger img';
         var imageUrlElement = document.querySelector(className8);
-        var imageUrl = imageUrlElement?.attributes['src'];
+        var shopImageUrl = imageUrlElement?.attributes['src'];
+
+        //Ürünün ilk resmi
+        String className16 = 'img';
+        var productImageUrlElement = document.querySelector(className16);
+        var productImageUrl = productImageUrlElement?.attributes['src'];
 
         //Mağaza sahibinin adı
         String className9 = 'p.wt-text-body-03.wt-line-height-tight.wt-mb-lg-1';
@@ -144,7 +153,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           etsyObj.discountPrice = discountPrice;
           etsyObj.discountRate = discountRate;
           etsyObj.price = price;
-          etsyObj.imageUrl = imageUrl;
+          etsyObj.shopImageUrl = shopImageUrl;
+          etsyObj.productImageUrl = productImageUrl;
           etsyObj.productCommentCount = productCommentCount;
           etsyObj.shopCommentCount = shopCommentCount;
           etsyObj.shopName = shopName;
@@ -199,16 +209,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (!loading)
             Column(
               children: [
-                Text('title: ${etsyObj?.title}'), // title
-                Text('description: ${etsyObj?.description}'), //description
-                Text('price: ${etsyObj?.price}'), // price
+                // Container(
+                //   child: Text('sfad'),
+                // ),
+                ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Image.network(
+                        etsyObj.productImageUrl ??
+                            'https://thumbs.dreamstime.com/b/photo-camera-line-icon-image-photography-sign-picture-placeholder-symbol-quality-design-element-linear-style-photo-camera-icon-219079286.jpg',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    etsyObj.title ?? '',
+                    maxLines: 1,
+                  ),
+                  subtitle: Column(
+                    children: [
+                      Text('Fiyat: ${etsyObj.price}'),
+                      Text('İndirim Oranı: ${etsyObj.discountRate}'),
+                      Text('İndirimli Fiyat: ${etsyObj.discountPrice}'),
+                    ],
+                  ),
+                  trailing: Text('trailing'),
+                ),
+                Card(
+                    child: Text(
+                        'datasdasdatasdasdasdasdaadatasdasdasdasdaadasdasdaa')),
+                Text('title: ${etsyObj.title}'), // title
+                // Text('description: ${etsyObj?.description}'), //description
+                Text('price: ${etsyObj.price}'), // price
+                Text('discountPrice: ${etsyObj.discountPrice}'), //discountprice
+                Text('discountRate: ${etsyObj.discountRate}'), //discounted rate
+                Text('imageUrl: ${etsyObj.productImageUrl}'), // imageUrl
+                Text('shopName: ${etsyObj.shopName}'), // shopName
                 Text(
-                    'discountPrice: ${etsyObj?.discountPrice}'), //discountprice
+                    'shopOwnerName: ${etsyObj.shopOwnerName}'), // shopOwnerName
+                Text('shopUrl: ${etsyObj.shopUrl}'), // shopUrl
                 Text(
-                    'discountRate: ${etsyObj?.discountRate}'), //discounted rate
+                    'shopCommentCount: ${etsyObj.shopCommentCount}'), // shopCommentCount
                 Text(
-                    'discountPrice: ${etsyObj?.discountPrice}'), // comment Counts
-                Text('data'), //all reviies counts
+                    'productCommentCount: ${etsyObj.productCommentCount}'), // productCommentCount
+                Text(
+                    'reviews.length: ${etsyObj.reviews.length}'), // productCommentCount
               ],
             )
           else
