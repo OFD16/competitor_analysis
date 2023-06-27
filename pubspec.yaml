@@ -43,6 +43,9 @@ dependencies:
   webview_flutter:              #for mobil
   webview_windows: ^0.2.2       #for desktop
 
+  dart_sentiment: ^0.0.9
+  fl_chart: ^0.62.0
+
 
   # firebase_auth: ^4.6.3
 dev_dependencies: 
