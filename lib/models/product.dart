@@ -5,7 +5,8 @@ class Product {
   String? price;
   String? discountPrice;
   String? discountRate;
-  String? imageUrl;
+  String? shopImageUrl;
+  String? productImageUrl;
   String? shopOwnerName;
   String? shopUrl;
   String? shopName;
@@ -20,7 +21,8 @@ class Product {
     this.price,
     this.discountPrice,
     this.discountRate,
-    this.imageUrl,
+    this.shopImageUrl,
+    this.productImageUrl,
     this.shopOwnerName,
     this.shopUrl,
     this.shopName,
