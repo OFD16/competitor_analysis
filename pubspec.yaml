@@ -40,8 +40,8 @@ dependencies:
   http:
   html:
   web_scraper: 
-  webview_flutter:              #for mobil
-  webview_windows: ^0.2.2       #for desktop
+  # webview_flutter:              #for mobil
+  # webview_windows: ^0.2.2       #for desktop
 
   dart_sentiment: ^0.0.9
   fl_chart: ^0.62.0

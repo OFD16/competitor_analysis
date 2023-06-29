@@ -1,12 +1,12 @@
 import "package:fluent_ui/fluent_ui.dart";
+import 'package:html/parser.dart' show parse;
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:web_scraper/web_scraper.dart';
 
 import '../models/index.dart' as models;
-import '../widgets/index.dart' as components;
 import '../themes/constants.dart' show Constants;
-
-import 'package:web_scraper/web_scraper.dart';
-import 'package:intl/intl.dart';
-import 'package:html/parser.dart' show parse;
+import '../widgets/index.dart' as components;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -30,6 +30,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool loading = false;
 
   late models.Product etsyObj = models.Product();
+
+  void getComments() async {
+    try {
+      String text =
+          'https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1';
+      Uri url = Uri.parse(text);
+      var res = await http.get(url);
+      final body = res.body;
+      final document = parse(body);
+
+      print('document: ${document.outerHtml}');
+    } catch (e) {
+      print(e);
+    }
+  }
 
   String extractUrl(String url) {
     final uri = Uri.parse(url);
@@ -200,11 +215,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   fetchDocument();
-  // }
+  @override
+  void initState() {
+    super.initState();
+    // fetchDocument();
+    getComments();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 20),
           if (!loading)
             Column(
               children: [
@@ -247,23 +264,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             )
           else
-            const ProgressRing(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: ProgressRing(),
+                )
+              ],
+            ),
         ],
       ),
     );
   }
 }
-        // Extract the comment data.
-        // String className14 = 'div[data-test-id="Comment"]';
-        // var commentElements = document.querySelectorAll(className14);
-        // List<String> comments = [];
-        // for (var commentElement in commentElements) {
-        //   var comment = commentElement.querySelector('.Comment-text')?.text;
-        //   comments.add(comment!);
-        // }
+// Extract the comment data.
+// String className14 = 'div[data-test-id="Comment"]';
+// var commentElements = document.querySelectorAll(className14);
+// List<String> comments = [];
+// for (var commentElement in commentElements) {
+//   var comment = commentElement.querySelector('.Comment-text')?.text;
+//   comments.add(comment!);
+// }
 
-        // // Print the comment data.
-        // print(comments);
+// // Print the comment data.
+// print(comments);
 
 //         //-----------------------------------------------------------------
 //         //İlk Review
@@ -293,67 +319,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
 //         var reviewRating = extractRating(res, Constants.reviewRate);
 
 // //-----------------------------------------------------------------
-      // çalışıyor ama 2 kez çalıştırınca fonksiyonu düzgün çalışıyor. İlk seferinde hep eksik getiriyor.
-        // void extractReviewersUserNameAndProfileUrls(String html) async {
-        //   final document = await parse(html);
-        //   final linkElements =
-        //       document.querySelectorAll('a[data-transaction-id]');
-        //   print('linkElements: $linkElements');
+// çalışıyor ama 2 kez çalıştırınca fonksiyonu düzgün çalışıyor. İlk seferinde hep eksik getiriyor.
+// void extractReviewersUserNameAndProfileUrls(String html) async {
+//   final document = await parse(html);
+//   final linkElements =
+//       document.querySelectorAll('a[data-transaction-id]');
+//   print('linkElements: $linkElements');
 
-        //   if (linkElements.isNotEmpty) {
-        //     for (final linkElement in linkElements) {
-        //       final profileUrl = linkElement.attributes['href'] ?? '';
-        //       final userName = linkElement.text.trim().replaceAll('\n', '');
+//   if (linkElements.isNotEmpty) {
+//     for (final linkElement in linkElements) {
+//       final profileUrl = linkElement.attributes['href'] ?? '';
+//       final userName = linkElement.text.trim().replaceAll('\n', '');
 
-        //       List<String> parts = userName.split(RegExp(r'\s+'));
-        //       String username = '';
-        //       String rate = '';
+//       List<String> parts = userName.split(RegExp(r'\s+'));
+//       String username = '';
+//       String rate = '';
 
-        //       if (parts.length >= 5) {
-        //         username = parts.sublist(0, parts.length - 5).join(' ');
-        //         rate = parts.sublist(parts.length - 5).join(' ');
-        //       } else if (parts.length > 0) {
-        //         username = parts[0];
-        //       }
+//       if (parts.length >= 5) {
+//         username = parts.sublist(0, parts.length - 5).join(' ');
+//         rate = parts.sublist(parts.length - 5).join(' ');
+//       } else if (parts.length > 0) {
+//         username = parts[0];
+//       }
 
-        //       print('-----------------------------------------');
-        //       print('profileUrl: ${profileUrl.trim()}');
-        //       print('Username: $username');
-        //       print('Rate: $rate');
-        //     }
-        //   }
-        // }
+//       print('-----------------------------------------');
+//       print('profileUrl: ${profileUrl.trim()}');
+//       print('Username: $username');
+//       print('Rate: $rate');
+//     }
+//   }
+// }
 // //-----------------------------------------------------------------
-        // var productTitlesAndUrls = extractReviewersUserNameAndProfileUrls(res);
+// var productTitlesAndUrls = extractReviewersUserNameAndProfileUrls(res);
 
-         // print('newcdoc $newdoc');
-        // // for (var doc in newdoc) {
-        // //   print('doc: ${doc.outerHtml}');
-        // // }
-        // // print('doc: ${newdoc[1].outerHtml}');
-        // var reppp =
-        //     'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0'
-        //         .replaceAll(' ', '.');
-        // var elements = html.querySelectorAll(reppp);
-        // print('elements $elements');
-        // print(elements);
-        // print(elements[0].outerHtml);
+// print('newcdoc $newdoc');
+// // for (var doc in newdoc) {
+// //   print('doc: ${doc.outerHtml}');
+// // }
+// // print('doc: ${newdoc[1].outerHtml}');
+// var reppp =
+//     'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0'
+//         .replaceAll(' ', '.');
+// var elements = html.querySelectorAll(reppp);
+// print('elements $elements');
+// print(elements);
+// print(elements[0].outerHtml);
 
-                // List<String> cssSelectors = [
-        //   Constants
-        //       .reviewsUsernamesListClassName, //Yorumlardaki usernamelerin listesi
-        // ];
-        // List<String> extractedTextList =
-        //     extractReviewersNames(res, cssSelectors);
-        // print('extractedTextList: $extractedTextList');
-        // List<int> ratings = extractRatingsList(
-        //     res,
-        //     Constants
-        //         .reviewsRateListClassName); //Yorumlardaki userların rateingleri
-        // print('ratings: $ratings');
-        // List<String> reviewTexts = extractReviewTexts(
-        //     res, Constants.reviewTextsClassName); //Yorumlardaki reviewslar
-        // print('reviewTexts: $reviewTexts');
-        // List<DateTime> dates =
-        //     extractDates(res, Constants.reviewDatesClassName);
-        // print('dates: $dates');
+// List<String> cssSelectors = [
+//   Constants
+//       .reviewsUsernamesListClassName, //Yorumlardaki usernamelerin listesi
+// ];
+// List<String> extractedTextList =
+//     extractReviewersNames(res, cssSelectors);
+// print('extractedTextList: $extractedTextList');
+// List<int> ratings = extractRatingsList(
+//     res,
+//     Constants
+//         .reviewsRateListClassName); //Yorumlardaki userların rateingleri
+// print('ratings: $ratings');
+// List<String> reviewTexts = extractReviewTexts(
+//     res, Constants.reviewTextsClassName); //Yorumlardaki reviewslar
+// print('reviewTexts: $reviewTexts');
+// List<DateTime> dates =
+//     extractDates(res, Constants.reviewDatesClassName);
+// print('dates: $dates');
