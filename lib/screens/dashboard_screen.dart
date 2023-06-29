@@ -151,8 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             extractTextContent(res, Constants.priceClassName); //Tam fiyat
         var discountPrice =
             extractTextContent(res, Constants.discountPriceClassName)
-                .replaceAll(RegExp(r'^Price:\s*'), '');
-        ; //Indirimli fiyat
+                .replaceAll(RegExp(r'^Price:\s*'), ''); //Indirimli fiyat
         var shopOwnerName = extractTextContent(
             res, Constants.shopOwnerNameClassName); //Mağaza sahibinin adı
         var shopName =
@@ -175,85 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             res, Constants.discountRateClassName, '(', ')',
             removeOffText: true); //Indirim oranı
 //-----------------------------------------------------------------
-        //Reviews
-        List<String> cssSelectors = [
-          Constants
-              .reviewsUsernamesListClassName, //Yorumlardaki usernamelerin listesi
-        ];
-        List<String> extractedTextList =
-            extractReviewersNames(res, cssSelectors);
-        //print('extractedTextList: $extractedTextList');
-
-        List<int> ratings = extractRatingsList(
-            res,
-            Constants
-                .reviewsRateListClassName); //Yorumlardaki userların rateingleri
-        //print('ratings: $ratings');
-
-        List<String> reviewTexts = extractReviewTexts(
-            res, Constants.reviewTextsClassName); //Yorumlardaki reviewslar
-        //print('reviewTexts: $reviewTexts');
-        // for (var reviewText in reviewTexts) {
-        //   print(reviewText);
-        // }
-
-        List<DateTime> dates =
-            extractDates(res, Constants.reviewDatesClassName);
-        //print('dates: $dates');
-        // for (var date in dates) {
-        //   print(date);
-        // }
-        //TODO: Alınan ürün title ı ve linki kaldı sonra paginated yorumları çekme
-        void extractLinkAndText(String html) {
-          final document = parse(html);
-          final linkElement = document.querySelector('a[data-transaction-id]');
-          final link = linkElement?.attributes['href'] ?? '';
-          final text = linkElement?.text ?? '';
-
-          print('Link: $link');
-          print('Text: $text');
-        }
-
-        var productTitlesAndUrls = extractLinkAndText(res);
-
-        // for (var entry in productTitlesAndUrls) {
-        //   print(entry);
-        // }
-
-        // List<models.Review> createReviewList(List<String> extractedTextList,
-        //     List<int> ratings, List<String> reviewTexts, List<DateTime> dates) {
-        //   final reviewList = <models.Review>[];
-        //   final ratingIterator = ratings.iterator;
-
-        //   for (var i = 0; i < extractedTextList.length; i++) {
-        //     final name = extractedTextList[i];
-        //     final rating =
-        //         ratingIterator.moveNext() ? ratingIterator.current : null;
-        //     final reviewText = reviewTexts[i];
-        //     final date = dates[i];
-
-        //     final review = models.Review(
-        //         name: name,
-        //         rating: rating ?? 0,
-        //         reviewText: reviewText,
-        //         date: date);
-        //     reviewList.add(review);
-        //   }
-
-        //   return reviewList;
-        // }
-
-        // List<models.Review> reviewList =
-        //     createReviewList(extractedTextList, ratings, reviewTexts, dates);
-        // print('reviewList: $reviewList');
-        // for (var review in reviewList) {
-        //   print('Name: ${review.name}');
-        //   print('Rating: ${review.rating}');
-        //   print('Review Text: ${review.reviewText}');
-        //   print('Date: ${review.date}');
-        //   print('---');
-        // }
-
+        // //Reviews
 //-----------------------------------------------------------------
         setState(() {
           loading = false;
@@ -372,3 +293,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
 //         var reviewRating = extractRating(res, Constants.reviewRate);
 
 // //-----------------------------------------------------------------
+      // çalışıyor ama 2 kez çalıştırınca fonksiyonu düzgün çalışıyor. İlk seferinde hep eksik getiriyor.
+        // void extractReviewersUserNameAndProfileUrls(String html) async {
+        //   final document = await parse(html);
+        //   final linkElements =
+        //       document.querySelectorAll('a[data-transaction-id]');
+        //   print('linkElements: $linkElements');
+
+        //   if (linkElements.isNotEmpty) {
+        //     for (final linkElement in linkElements) {
+        //       final profileUrl = linkElement.attributes['href'] ?? '';
+        //       final userName = linkElement.text.trim().replaceAll('\n', '');
+
+        //       List<String> parts = userName.split(RegExp(r'\s+'));
+        //       String username = '';
+        //       String rate = '';
+
+        //       if (parts.length >= 5) {
+        //         username = parts.sublist(0, parts.length - 5).join(' ');
+        //         rate = parts.sublist(parts.length - 5).join(' ');
+        //       } else if (parts.length > 0) {
+        //         username = parts[0];
+        //       }
+
+        //       print('-----------------------------------------');
+        //       print('profileUrl: ${profileUrl.trim()}');
+        //       print('Username: $username');
+        //       print('Rate: $rate');
+        //     }
+        //   }
+        // }
+// //-----------------------------------------------------------------
+        // var productTitlesAndUrls = extractReviewersUserNameAndProfileUrls(res);
+
+         // print('newcdoc $newdoc');
+        // // for (var doc in newdoc) {
+        // //   print('doc: ${doc.outerHtml}');
+        // // }
+        // // print('doc: ${newdoc[1].outerHtml}');
+        // var reppp =
+        //     'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0'
+        //         .replaceAll(' ', '.');
+        // var elements = html.querySelectorAll(reppp);
+        // print('elements $elements');
+        // print(elements);
+        // print(elements[0].outerHtml);
+
+                // List<String> cssSelectors = [
+        //   Constants
+        //       .reviewsUsernamesListClassName, //Yorumlardaki usernamelerin listesi
+        // ];
+        // List<String> extractedTextList =
+        //     extractReviewersNames(res, cssSelectors);
+        // print('extractedTextList: $extractedTextList');
+        // List<int> ratings = extractRatingsList(
+        //     res,
+        //     Constants
+        //         .reviewsRateListClassName); //Yorumlardaki userların rateingleri
+        // print('ratings: $ratings');
+        // List<String> reviewTexts = extractReviewTexts(
+        //     res, Constants.reviewTextsClassName); //Yorumlardaki reviewslar
+        // print('reviewTexts: $reviewTexts');
+        // List<DateTime> dates =
+        //     extractDates(res, Constants.reviewDatesClassName);
+        // print('dates: $dates');
