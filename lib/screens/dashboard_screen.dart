@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:competitor_analysis/widgets/cards/product_card.dart';
 import "package:fluent_ui/fluent_ui.dart";
 import 'package:html/parser.dart' show parse;
 import 'package:http/http.dart' as http;
@@ -6,7 +9,6 @@ import 'package:web_scraper/web_scraper.dart';
 
 import '../models/index.dart' as models;
 import '../themes/constants.dart' show Constants;
-import '../widgets/index.dart' as components;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -42,110 +44,108 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final body = await res.body;
       final document = await parse(body);
 
-      setState(() {
+      /*setState(() {
         htmlCode = body.toString();
-      });
+      });*/
 
       var index = 0;
       var reviewText =
           await document.getElementById("review-preview-toggle-$index");
-      // print('reviewText: ${reviewText!.text.trim()}');
+      print('reviewText: ${reviewText!.text.trim()}');
 
-      // var reviewUser = await document.getElementsByClassName(
-      //     "wt-text-truncate.wt-text-body-small.wt-text-gray");
+      var reviewUser = await document.getElementsByClassName(
+          "wt-text-truncate.wt-text-body-small.wt-text-gray");
 
-      // print('reviewUser: ${reviewUser[index].text}');
+      print('reviewUser: ${reviewUser[index].text}');
 
-      // var reviewRating =
-      //     document.querySelectorAll('input[name="rating"]').sublist(2);
+      var reviewRating =
+          await document.querySelectorAll('input[name="rating"]').sublist(2);
 
-      // print('reviewRating: ${reviewRating[index].attributes["value"]}');
+      print('reviewRating: ${reviewRating[index].attributes["value"]}');
 
-      // var reviewDate = document.getElementsByClassName(
-      //     "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
+      var reviewDate = await document.getElementsByClassName(
+          "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
 
-      // print(
-      //     'reviewDate: ${DateFormat('MMM d, yyyy').parse(reviewDate[index].text)}');
+      print(
+          'reviewDate: ${DateFormat('MMM d, yyyy').parse(reviewDate[index].text)}');
 
       var reviewProduct = await document
-          .getElementsByClassName("wt-display-flex-xs wt-pt-xs-1")
+          .getElementsByClassName('wt-display-flex-xs wt-pt-xs-1')
           .sublist(1);
 
-      // print('reviewProduct: ${reviewProduct}');
+      print('reviewProduct: ${reviewProduct}');
       // print('reviewProduct: ${reviewProduct[3].outerHtml}');
     } catch (e) {
       print(e);
     }
   }
 
-  void getCommentsRequest() async {
-    final url = Uri.parse(
+  void getCommentsRequest(
+      {required String listingId, required String shopId}) async {
+    final baseUrl = Uri.parse(
         'https://www.etsy.com/api/v3/ajax/bespoke/member/neu/specs/reviews');
 
-    final headers = {
-      'Content-Type': 'text/plain',
-      // 'Content-Length': '0',
-      'User-Agent': 'PostmanRuntime/7.32.3',
-      'Host': '',
-      //
+    const url =
+        'https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1';
 
-      'Accept': '*/*',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Connection': 'keep-alive',
-      //
+    final headers = {
       'authority': 'www.etsy.com',
       'accept': '*/*',
-      'accept-language':
-          'en-XA,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,en-GB;q=0.6,en-US;q=0.5',
+      'accept-language': 'en;q=0.5',
       'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
       'cookie':
-          'uaid=Y5Ek8zsTfxToOox5zDEDnRMYz-tjZACClLmFGjC6Wqk0MTNFyUrJ3SIxw9TV2T1QNyS00j_POL44xKcoOdIjzTEgS6mWAQA.; user_prefs=9rB1j-Y570gGHh2HEMf3Wp_YuZZjZACClLmFGjA6WikkKFJJJ680J0dHKTVPNzRYSQcoBBUxglC4iFgGAA..; fve=1688039720.0; _fbp=fb.1.1688039720856.6805171157864266; ua=531227642bc86f3b5fd7103a0c0b4fd6; _gcl_au=1.1.1069083127.1688039723; _gid=GA1.2.667656085.1688039723; _pin_unauth=dWlkPVpESXlaVFkyTURjdFpUWXlZUzAwWW1Sa0xUZ3pNR0l0WmpreU9EZGtaV0ppWlRnMA; last_browse_page=https%3A%2F%2Fwww.etsy.com%2Fshop%2FViePlanners; _dc_gtm_UA-2409779-1=1; _ga=GA1.1.1894837630.1688039723; _uetsid=d43afc80167311ee8b41757c28512ea9; _uetvid=d43b0140167311eeaf856f315edfd087; _ga_KR3J610VYM=GS1.1.1688054419.4.1.1688056874.58.0.0',
+          'uaid=lVkWsMixQsoKdTmXiQNVMhTTnxRjZACClBkVXDC6Wqk0MTNFyUrJOz87KNyssiC5MtLYON8z1MvbPdyzqMQpydzHT6mWAQA.; user_prefs=LamgXwAYpXBJgO9VelLXMkWhZRxjZACClBkVXDA6WikkKFJJJ680J0dHKTVPNzRYSQcoBBUxglC4iFgGAA..; fve=1687713802.0; _fbp=fb.1.1687713802186.3086167855707117; ua=531227642bc86f3b5fd7103a0c0b4fd6; last_browse_page=https%3A%2F%2Fwww.etsy.com%2Fshop%2FViePlanners; _fbp=fb.1.1687713802186.3086167855707117; fve=1687713802.0; uaid=_d_PLro-eqI_LhmKcwTFauRmDcpjZACClBkVj2B0tVJpYmaKkpVSUr5HvpNJXlGSkVOUV1WYRYB3YKqZa0ROZq5xllItAwA.; user_prefs=sZvLx5JHl2CJ4MO3yfVNAz5nHmdjZACClBkVj2B0tFJIUKSSTl5pTo6OUmqebmiwkg5QCCpiBKFwEbEMAA..',
       'origin': 'https://www.etsy.com',
-      'referer':
-          'https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1',
-      'sec-ch-ua':
-          '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+      'referer': url,
+      'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Brave";v="114"',
       'sec-ch-ua-mobile': '?0',
       'sec-ch-ua-platform': '"Windows"',
-      "sec-fetch-mode": "cors",
-      "sec-fetch-site": "same-origin",
-      "user-agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-      "x-csrf-token":
-          "3:1688056871:3U-si0K1G6xGHeZ1_jyI84ix15tB:c35340146eb0675cb495b534c963c98064e078af814e266f18a83c42f3779865",
-      "x-detected-locale": "TRY|en-US|TR",
-      "x-page-guid": "f5a504d35db.14c9ca9ab1e3f00c6d55.00",
-      "x-recs-primary-location":
-          "https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1",
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
+      'sec-gpc': '1',
+      'user-agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+      'x-csrf-token':
+          '3:1688079272:6uChyDJ5W1egCI_KMyYH5ymZQO6B:8529dc1a2d963f4bc928b8d42d67183d17676ea49b161fcff091b0a59f54d1de',
+      'x-detected-locale': 'TRY|en-US|TR',
+      'x-page-guid': 'f5a5da767c6.f9891077a082c15c7848.00',
+      'x-recs-primary-location': url,
       'x-recs-primary-referrer': '',
-      'X-Requested-With': 'XMLHttpRequest',
-      //
+      'x-requested-with': 'XMLHttpRequest',
     };
 
-    const body =
-        'log_performance_metrics=true&specs%5Breviews%5D%5B%5D=Etsy%5CModules%5CListingPage%5CReviews%5CApiSpec&specs%5Breviews%5D%5B1%5D%5Blisting_id%5D=1228308510&specs%5Breviews%5D%5B1%5D%5Bshop_id%5D=35583724&specs%5Breviews%5D%5B1%5D%5Brender_complete%5D=true&specs%5Breviews%5D%5B1%5D%5Bactive_tab%5D=same_listing_reviews&specs%5Breviews%5D%5B1%5D%5Bshould_lazy_load_images%5D=false&specs%5Breviews%5D%5B1%5D%5Bshould_use_pagination%5D=true&specs%5Breviews%5D%5B1%5D%5Bpage%5D=2&specs%5Breviews%5D%5B1%5D%5Bshould_show_variations%5D=false&specs%5Breviews%5D%5B1%5D%5Bis_reviews_untabbed_cached%5D=false&specs%5Breviews%5D%5B1%5D%5Bwas_landing_from_external_referrer%5D=false&specs%5Breviews%5D%5B1%5D%5Bsort_option%5D=Relevancy';
+    const page = 1;
 
-    http.post(url, headers: headers, body: body).then((response) {
-      print('headeRS: ${response.headers}');
-      print('body: ${response.body}');
-      final csrfToken = response.headers['x-csrf-token'];
-      if (csrfToken != null) {
-        // Update the CSRF token in the headers
-        headers['x-csrf-token'] = csrfToken;
+    var data =
+        'log_performance_metrics=true&specs%5Breviews%5D%5B%5D=Etsy%5CModules%5CListingPage%5CReviews%5CApiSpec&specs%5Breviews%5D%5B1%5D%5Blisting_id%5D=$listingId&specs%5Breviews%5D%5B1%5D%5Bshop_id%5D=$shopId&specs%5Breviews%5D%5B1%5D%5Brender_complete%5D=true&specs%5Breviews%5D%5B1%5D%5Bactive_tab%5D=same_listing_reviews&specs%5Breviews%5D%5B1%5D%5Bshould_lazy_load_images%5D=false&specs%5Breviews%5D%5B1%5D%5Bshould_use_pagination%5D=true&specs%5Breviews%5D%5B1%5D%5Bpage%5D=$page&specs%5Breviews%5D%5B1%5D%5Bshould_show_variations%5D=false&specs%5Breviews%5D%5B1%5D%5Bis_reviews_untabbed_cached%5D=false&specs%5Breviews%5D%5B1%5D%5Bwas_landing_from_external_referrer%5D=false&specs%5Breviews%5D%5B1%5D%5Bsort_option%5D=Relevancy';
+    var res = await http.post(baseUrl, headers: headers, body: data);
 
-        // Retry the request with the updated headers
-        http.post(url, headers: headers, body: body).then((response) {
-          print('Response status: ${response.statusCode}');
-          print('Response body: ${response.body}');
-        }).catchError((error) {
-          print('Error: $error');
-        });
-      } else {
-        print('CSRF token not found in the response headers');
-      }
-    }).catchError((error) {
-      print('Error: $error');
-    });
+    var body = jsonDecode(utf8.decode(res.bodyBytes));
+
+    final document = parse(body["output"]["reviews"]);
+
+    int index = 0;
+
+    var reviewText = document.getElementById("review-preview-toggle-$index");
+    print('reviewText: ${reviewText!.text.trim()}');
+
+    var reviewUser = document.getElementsByClassName(
+        "wt-text-truncate.wt-text-body-small.wt-text-gray");
+    print('reviewUser: ${reviewUser[index].text}');
+
+    var reviewRating =
+        document.querySelectorAll('input[name="rating"]').sublist(2);
+    print('reviewRating: ${reviewRating[index].attributes["value"]}');
+
+    var reviewDate = document.getElementsByClassName(
+        "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
+    print(
+        'reviewDate: ${DateFormat('MMM d, yyyy').parse(reviewDate[index].text)}');
+
+    var reviewProduct = document.querySelectorAll('a[data-review-link]');
+    print('reviewProduct: ${reviewProduct[index].text}');
+    print('reviewProductLink: ${reviewProduct[index].attributes["href"]}');
   }
 
   String extractUrl(String url) {
@@ -261,6 +261,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (await webScraper.loadWebPage(continueURL)) {
         final res = webScraper.getPageContent();
 
+        final document = parse(res);
+
+        var newShopId = document
+            .querySelectorAll('div[data-shop-id]')[0]
+            .attributes["data-shop-id"];
+
+        var newListingId = document
+            .querySelectorAll('div[data-listing-id]')[0]
+            .attributes["data-listing-id"];
+
+        print("newShopId $newShopId");
+        print("newListingId $newListingId");
+
+        getCommentsRequest(
+            listingId: newListingId.toString(), shopId: newShopId.toString());
+
         var title = extractTextContent(res, Constants.titleClassName); //Başlık
         var description =
             extractTextContent(res, Constants.descriptionClassName); //Açıklama
@@ -321,8 +337,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     // fetchDocument();
-    getComments();
-    getCommentsRequest();
+    // getComments();
+    // getCommentsRequest();
     //fetchReviews();
   }
 
@@ -356,7 +372,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 20),
           if (!loading)
-            SelectableText(htmlCode)
+            const ProductCard()
           else
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -374,43 +390,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 //Request
-  // void fetchReviews() async {
-  //   var url = Uri.parse(
-  //       'https://www.etsy.com/api/v3/ajax/bespoke/member/neu/specs/reviews');
+// void fetchReviews() async {
+//   var url = Uri.parse(
+//       'https://www.etsy.com/api/v3/ajax/bespoke/member/neu/specs/reviews');
 
-  //   var headers = {
-  //     "accept": "*/*",
-  //     "accept-language":
-  //         "en-XA,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,en-GB;q=0.6,en-US;q=0.5",
-  //     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-  //     "sec-ch-ua":
-  //         "\"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"114\", \"Google Chrome\";v=\"114\"",
-  //     "sec-ch-ua-mobile": "?0",
-  //     "sec-ch-ua-platform": "\"Windows\"",
-  //     "sec-fetch-dest": "empty",
-  //     "sec-fetch-mode": "cors",
-  //     "sec-fetch-site": "same-origin",
-  //     "x-csrf-token":
-  //         "3:1688056871:3U-si0K1G6xGHeZ1_jyI84ix15tB:c35340146eb0675cb495b534c963c98064e078af814e266f18a83c42f3779865",
-  //     "x-detected-locale": "TRY|en-US|TR",
-  //     "x-page-guid": "f5a504d35db.14c9ca9ab1e3f00c6d55.00",
-  //     "x-recs-primary-location":
-  //         "https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1",
-  //     "x-recs-primary-referrer": "",
-  //     "x-requested-with": "XMLHttpRequest"
-  //   };
+//   var headers = {
+//     "accept": "*/*",
+//     "accept-language":
+//         "en-XA,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,en-GB;q=0.6,en-US;q=0.5",
+//     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+//     "sec-ch-ua":
+//         "\"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"114\", \"Google Chrome\";v=\"114\"",
+//     "sec-ch-ua-mobile": "?0",
+//     "sec-ch-ua-platform": "\"Windows\"",
+//     "sec-fetch-dest": "empty",
+//     "sec-fetch-mode": "cors",
+//     "sec-fetch-site": "same-origin",
+//     "x-csrf-token":
+//         "3:1688056871:3U-si0K1G6xGHeZ1_jyI84ix15tB:c35340146eb0675cb495b534c963c98064e078af814e266f18a83c42f3779865",
+//     "x-detected-locale": "TRY|en-US|TR",
+//     "x-page-guid": "f5a504d35db.14c9ca9ab1e3f00c6d55.00",
+//     "x-recs-primary-location":
+//         "https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1",
+//     "x-recs-primary-referrer": "",
+//     "x-requested-with": "XMLHttpRequest"
+//   };
 
-  //   var body =
-  //       "log_performance_metrics=true&specs%5Breviews%5D%5B%5D=Etsy%5CModules%5CListingPage%5CReviews%5CApiSpec&specs%5Breviews%5D%5B1%5D%5Blisting_id%5D=1228308510&specs%5Breviews%5D%5B1%5D%5Bshop_id%5D=35583724&specs%5Breviews%5D%5B1%5D%5Brender_complete%5D=true&specs%5Breviews%5D%5B1%5D%5Bactive_tab%5D=same_listing_reviews&specs%5Breviews%5D%5B1%5D%5Bshould_lazy_load_images%5D=false&specs%5Breviews%5D%5B1%5D%5Bshould_use_pagination%5D=true&specs%5Breviews%5D%5B1%5D%5Bpage%5D=2&specs%5Breviews%5D%5B1%5D%5Bshould_show_variations%5D=false&specs%5Breviews%5D%5B1%5D%5Bis_reviews_untabbed_cached%5D=false&specs%5Breviews%5D%5B1%5D%5Bwas_landing_from_external_referrer%5D=false&specs%5Breviews%5D%5B1%5D%5Bsort_option%5D=Relevancy";
+//   var body =
+//       "log_performance_metrics=true&specs%5Breviews%5D%5B%5D=Etsy%5CModules%5CListingPage%5CReviews%5CApiSpec&specs%5Breviews%5D%5B1%5D%5Blisting_id%5D=1228308510&specs%5Breviews%5D%5B1%5D%5Bshop_id%5D=35583724&specs%5Breviews%5D%5B1%5D%5Brender_complete%5D=true&specs%5Breviews%5D%5B1%5D%5Bactive_tab%5D=same_listing_reviews&specs%5Breviews%5D%5B1%5D%5Bshould_lazy_load_images%5D=false&specs%5Breviews%5D%5B1%5D%5Bshould_use_pagination%5D=true&specs%5Breviews%5D%5B1%5D%5Bpage%5D=2&specs%5Breviews%5D%5B1%5D%5Bshould_show_variations%5D=false&specs%5Breviews%5D%5B1%5D%5Bis_reviews_untabbed_cached%5D=false&specs%5Breviews%5D%5B1%5D%5Bwas_landing_from_external_referrer%5D=false&specs%5Breviews%5D%5B1%5D%5Bsort_option%5D=Relevancy";
 
-  //   var response = await http.post(url, headers: headers, body: body);
+//   var response = await http.post(url, headers: headers, body: body);
 
-  //   print('Response status: ${response.statusCode}');
-  //   print('Response body: ${response.body}');
-  // }
-
-
-
+//   print('Response status: ${response.statusCode}');
+//   print('Response body: ${response.body}');
+// }
 
 // Column(
 //               children: [
