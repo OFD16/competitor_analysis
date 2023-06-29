@@ -40,7 +40,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final body = res.body;
       final document = parse(body);
 
-      print('document: ${document.outerHtml}');
+      var index = 0;
+      var reviewText = document.getElementById("review-preview-toggle-$index");
+      print('reviewText: ${reviewText!.text.trim()}');
+
+      var reviewUser = document.getElementsByClassName(
+          "wt-text-truncate.wt-text-body-small.wt-text-gray");
+
+      print('reviewUser: ${reviewUser[index].text}');
+
+      var reviewRating =
+          document.querySelectorAll('input[name="rating"]').sublist(2);
+
+      print('reviewRating: ${reviewRating[index].attributes["value"]}');
+
+      var reviewDate = document.getElementsByClassName(
+          "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
+
+      print(
+          'reviewDate: ${DateFormat('MMM d, yyyy').parse(reviewDate[index].text)}');
+
+      var reviewProduct = document
+          .getElementsByClassName("wt-display-flex-xs wt-pt-xs-1")
+          .sublist(1);
+
+      print('reviewProduct: ${reviewProduct}');
     } catch (e) {
       print(e);
     }
