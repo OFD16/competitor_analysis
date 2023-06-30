@@ -1,12 +1,11 @@
 class Review {
-  final String name;
-  final int rating;
-  final String reviewText;
-  final DateTime date;
+  final String? text;
+  final int? rating;
+  final String? title;
+  final String? path;
+  final DateTime? date;
+  final String? reviewer;
 
   Review(
-      {required this.name,
-      required this.rating,
-      required this.reviewText,
-      required this.date});
+      this.text, this.rating, this.title, this.path, this.date, this.reviewer);
 }

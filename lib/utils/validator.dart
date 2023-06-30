@@ -1,6 +1,4 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' show parse;
+import 'package:http/http.dart';
 
 class Validator {
   static String? validateEmail(String? value) {
@@ -25,15 +23,15 @@ class Validator {
     return null;
   }
 
-  handleResponse(dynamic response) {
+  Response handleResponse(Response response) {
     var responseBody = response.body;
     var statusCode = response.statusCode;
 
     if (statusCode == 200) {
       // print('responsebody: $responseBody');
-      var element = parse(responseBody);
+      //var element = parse(responseBody);
       // print('element: $element');
-      return element;
+      return response;
     } else {
       throw Exception('Request failed. Status code: $statusCode');
     }

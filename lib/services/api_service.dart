@@ -4,8 +4,8 @@ class ApiService {
   static const String baseUrl = 'https://www.etsy.com/';
 
   Future getHtmlDocument(String path) async {
-    var body = await BaseService(baseUrl).getRequest(path);
-    return body;
+    var res = await BaseService(baseUrl).getRequest(path);
+    return res;
   }
 
   Future getReviews(

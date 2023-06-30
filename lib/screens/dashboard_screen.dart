@@ -1,12 +1,15 @@
+import 'dart:convert';
+
 import 'package:competitor_analysis/services/api_service.dart';
 import 'package:competitor_analysis/widgets/cards/product_card.dart';
 import "package:fluent_ui/fluent_ui.dart";
-import 'package:html/parser.dart';
-import '../models/product.dart';
-import '../models/review.dart';
+import 'package:http/http.dart';
+
 import '../utils/index.dart' as utils;
 import '../models/index.dart' as models;
 import '../themes/constants.dart' show Constants;
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:html/parser.dart' show parse;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,9 +20,10 @@ class DashboardScreen extends StatefulWidget {
 
 const mainUrl = 'https://www.etsy.com/';
 
-var shopId = '';
-var listingId = '';
-var continueURL = '';
+String? shopId = '';
+String? listingId = '';
+String? continueURL = '';
+double? pageCount = 0;
 
 class _DashboardScreenState extends State<DashboardScreen> {
   TextEditingController urlController = TextEditingController(
@@ -29,7 +33,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   late models.Product etsyObj = models.Product();
 
-  Product product = Product();
+  models.Product product = models.Product();
+
+  List<models.Review> reviewList = [];
 
   Future getUrlDocument(String continueURL) async {
     setState(() {
@@ -37,7 +43,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       continueURL = utils.Extractter().extractUrl(urlController.text);
     });
     if (continueURL.isNotEmpty) {
-      var document = await ApiService().getHtmlDocument(continueURL);
+      Response res = await ApiService().getHtmlDocument(continueURL);
+
+      var document = parse(res.body);
 
       var newShopId = document
           .querySelectorAll('div[data-shop-id]')[0]
@@ -87,7 +95,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           document, Constants.discountRateClassName, '(', ')',
           removeOffText: true); //Indirim oranı
 
-      product = Product(
+      setState(() {
+        pageCount = (int.parse(productCommentCount) / 4.0);
+        print('pagecount $pageCount');
+      });
+
+      product = models.Product(
           title: title,
           description: description,
           price: price,
@@ -117,38 +130,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       loading = true;
     });
-    print('----------------------------------------------------');
-    print('continueURL:$continueURL');
-    print('listingId:$listingId');
-    print('shopId:$shopId');
-    var document =
-        await ApiService().getReviews(1, prodcutUrl, listingId, shopId);
 
-    // print('documan neymişş görelim: ${document}');
-    print(document.outerHtml);
-    var index = 1;
+    Response res =
+        await ApiService().getReviews(1, prodcutUrl, listingId!, shopId!);
 
-    var reviewText = document.getElementById("review-preview-toggle-$index");
-    print(reviewText);
+    var body = jsonDecode(utf8.decode(res.bodyBytes));
 
-    // var reviewUser = document.getElementsByClassName(
-    //     "wt-text-truncate.wt-text-body-small.wt-text-gray");
-    //
-    // var reviewRating =
-    //     document.querySelectorAll('input[name="rating"]').sublist(2);
-    //
-    // var reviewDate = document.getElementsByClassName(
-    //     "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
-    //
-    // Review review = Review(name: reviewUser, rating: reviewRating, date: reviewDate, reviewText: reviewText);
-    // print("TExt "+review.reviewText);
-    // print("date "+review.date.toString());
-    // print("namöe "+review.name);
-    // print("rating "+review.rating.toString());
+    final document = parse(body["output"]["reviews"]);
 
-    setState(() {
-      loading = false;
-    });
+    var reviewsLength = document
+        .getElementsByClassName(
+            "wt-text-truncate.wt-text-body-small.wt-text-gray")
+        .length;
+
+    for (int index = 0; index < reviewsLength; index++) {
+      models.Review review =
+          models.Review('', 0, '', '', DateTime(DateTime.january), '');
+
+      var reviewText =
+          document.getElementById("review-preview-toggle-$index")?.text.trim();
+      var reviewUser = document
+          .getElementsByClassName(
+              "wt-text-truncate.wt-text-body-small.wt-text-gray")[index]
+          .text
+          .trim();
+      var reviewRating = int.parse(document
+          .querySelectorAll('input[name="rating"]')
+          .sublist(1)[index]
+          .attributes['value']!);
+      var reviewDate = DateFormat('MMM d, yyyy').parse(document
+          .getElementsByClassName(
+              "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1")[index]
+          .text);
+      var reviewProductTitle =
+          document.querySelectorAll('a[data-review-link]')[index].text;
+      var reviewProductPath = document
+          .querySelectorAll('a[data-review-link]')[index]
+          .attributes["href"];
+
+      setState(() {
+        loading = false;
+        review = models.Review(reviewText, reviewRating, reviewProductTitle,
+            reviewProductPath, reviewDate, reviewUser);
+        reviewList.add(review);
+      });
+    }
+    // for (var review in reviewList) {
+    //   print('reviewers: ${review.reviewer}');
+    //   print('reviewers: ${review.path}');
+    //   print(' ----------------------------------------------------');
+    // }
   }
 
   @override
@@ -174,20 +205,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              Button(
-                child: const Text(
-                  'Analiz Et',
-                  style: TextStyle(height: 1.8),
-                ),
-                onPressed: () {
-                  // setState(() {
-                  //   continueURL =
-                  //       utils.Extractter().extractUrl(urlController.text);
-                  // });
-                  // getReviewsDocument(urlController.text);
-                  // getUrlDocument(continueURL);
-                },
-              ),
+              // Button(
+              //   child: const Text(
+              //     'Analiz Et',
+              //     style: TextStyle(height: 1.8),
+              //   ),
+              //   onPressed: () {
+              //     // setState(() {
+              //     //   continueURL =
+              //     //       utils.Extractter().extractUrl(urlController.text);
+              //     // });
+              //     // getReviewsDocument(urlController.text);
+              //     // getUrlDocument(continueURL);
+              //   },
+              // ),
             ],
           ),
           const SizedBox(height: 20),
@@ -210,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               utils.Extractter().extractUrl(urlController.text);
                         });
 
-                        getUrlDocument(continueURL);
+                        getUrlDocument(continueURL!);
                       },
                     ),
                     Button(
@@ -218,8 +249,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'Yorumları Çek',
                         style: TextStyle(height: 1.8),
                       ),
-                      onPressed: () {
-                        getReviewsDocument(urlController.text);
+                      onPressed: () async {
+                        for (int i = 0; i < pageCount!.toInt(); i++) {
+                          await getReviewsDocument(urlController.text);
+                        }
                       },
                     ),
                   ],
