@@ -2,10 +2,11 @@ import 'package:competitor_analysis/services/api_service.dart';
 import 'package:competitor_analysis/widgets/cards/product_card.dart';
 import "package:fluent_ui/fluent_ui.dart";
 import 'package:html/parser.dart';
-
+import '../models/product.dart';
+import '../models/review.dart';
 import '../utils/index.dart' as utils;
 import '../models/index.dart' as models;
-// import '../themes/constants.dart' show Constants;
+import '../themes/constants.dart' show Constants;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,6 +29,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   late models.Product etsyObj = models.Product();
 
+  Product product = Product();
+
   Future getUrlDocument(String continueURL) async {
     setState(() {
       loading = true;
@@ -43,6 +46,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
       var newListingId = document
           .querySelectorAll('div[data-listing-id]')[0]
           .attributes["data-listing-id"];
+
+      var title = utils.Extractter()
+          .extractTextContent(document, Constants.titleClassName);
+
+      var description = utils.Extractter().extractTextContent(
+          document, Constants.descriptionClassName); //Açıklama
+
+      var price = utils.Extractter()
+          .extractTextContent(document, Constants.priceClassName); //Tam fiyat
+
+      var discountPrice = utils.Extractter()
+          .extractTextContent(document, Constants.discountPriceClassName)
+          .replaceAll(RegExp(r'^Price:\s*'), ''); //Indirimli fiyat
+
+      var shopOwnerName = utils.Extractter().extractTextContent(
+          document, Constants.shopOwnerNameClassName); //Mağaza sahibinin adı
+
+      var shopName = utils.Extractter().extractTextContent(
+          document, Constants.shopNameClassName); //Mağaza adı
+
+      var shopCommentCount = utils.Extractter().extractTextContent(
+          document, Constants.shopReviewCountClassName); //Mağaza yorum sayısı
+
+      var productCommentCount = utils.Extractter().extractTextContent(
+          document, Constants.productReviewCountClassName); //Ürün yorum sayısı
+
+      var shopImageUrl = utils.Extractter().extractAttribute(document,
+          Constants.shopImageUrlClassName, 'src'); //Mağaza resim linki
+
+      var productImageUrl = utils.Extractter().extractAttribute(
+          document,
+          Constants.productFirstImageUrlClassName,
+          'src'); //Ürünün ilk resim linki
+
+      var shopUrl = utils.Extractter().extractAttribute(
+          document, Constants.shopUrlClassName, 'href'); //Mağazanın linki
+
+      var discountRate = utils.Extractter().extractDiscountRate(
+          document, Constants.discountRateClassName, '(', ')',
+          removeOffText: true); //Indirim oranı
+
+      product = Product(
+          title: title,
+          description: description,
+          price: price,
+          discountPrice: discountPrice,
+          shopOwnerName: shopOwnerName,
+          shopName: shopName,
+          shopCommentCount: shopCommentCount,
+          productCommentCount: productCommentCount,
+          shopImageUrl: shopImageUrl,
+          productImageUrl: productImageUrl,
+          shopUrl: shopUrl,
+          discountRate: discountRate);
+
       print('listingId:$listingId');
       print('shopId:$shopId');
 
@@ -67,6 +125,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await ApiService().getReviews(1, prodcutUrl, listingId, shopId);
 
     // print('documan neymişş görelim: ${document}');
+    print(document.outerHtml);
+    var index = 1;
+
+    var reviewText = document.getElementById("review-preview-toggle-$index");
+    print(reviewText);
+
+    // var reviewUser = document.getElementsByClassName(
+    //     "wt-text-truncate.wt-text-body-small.wt-text-gray");
+    //
+    // var reviewRating =
+    //     document.querySelectorAll('input[name="rating"]').sublist(2);
+    //
+    // var reviewDate = document.getElementsByClassName(
+    //     "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
+    //
+    // Review review = Review(name: reviewUser, rating: reviewRating, date: reviewDate, reviewText: reviewText);
+    // print("TExt "+review.reviewText);
+    // print("date "+review.date.toString());
+    // print("namöe "+review.name);
+    // print("rating "+review.rating.toString());
 
     setState(() {
       loading = false;
@@ -116,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (!loading)
             Column(
               children: [
-                const ProductCard(),
+                ProductCard(product: product),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -165,8 +243,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-        // getCommentsRequest(
-        //     listingId: newListingId.toString(), shopId: newShopId.toString());
+// getCommentsRequest(
+//     listingId: newListingId.toString(), shopId: newShopId.toString());
 
 //         var title = extractTextContent(res, Constants.titleClassName); //Başlık
 //         var description =
@@ -198,62 +276,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
 //             res, Constants.discountRateClassName, '(', ')',
 //             removeOffText: true); //Indirim oranı
 //-----------------------------------------------------------------
-        // //Reviews
+// //Reviews
 //-----------------------------------------------------------------
-        // setState(() {
-        //   loading = false;
-        //   etsyObj.title = title;
-        //   etsyObj.description = description;
-        //   etsyObj.discountPrice = discountPrice;
-        //   etsyObj.discountRate = discountRate;
-        //   etsyObj.price = price;
-        //   etsyObj.shopImageUrl = shopImageUrl;
-        //   etsyObj.productImageUrl = productImageUrl;
-        //   etsyObj.productCommentCount = productCommentCount;
-        //   etsyObj.shopCommentCount = shopCommentCount;
-        //   etsyObj.shopName = shopName;
-        //   etsyObj.shopOwnerName = shopOwnerName;
-        //   etsyObj.shopUrl = shopUrl;
-        // });
-
+// setState(() {
+//   loading = false;
+//   etsyObj.title = title;
+//   etsyObj.description = description;
+//   etsyObj.discountPrice = discountPrice;
+//   etsyObj.discountRate = discountRate;
+//   etsyObj.price = price;
+//   etsyObj.shopImageUrl = shopImageUrl;
+//   etsyObj.productImageUrl = productImageUrl;
+//   etsyObj.productCommentCount = productCommentCount;
+//   etsyObj.shopCommentCount = shopCommentCount;
+//   etsyObj.shopName = shopName;
+//   etsyObj.shopOwnerName = shopOwnerName;
+//   etsyObj.shopUrl = shopUrl;
+// });
 
 //---------------------------------------------------------------------------------------
 
+// void getCommentsRequest(
+//     {required String listingId, required String shopId}) async {
+//   final baseUrl = Uri.parse(
+//       'https://www.etsy.com/api/v3/ajax/bespoke/member/neu/specs/reviews');
 
-  // void getCommentsRequest(
-  //     {required String listingId, required String shopId}) async {
-  //   final baseUrl = Uri.parse(
-  //       'https://www.etsy.com/api/v3/ajax/bespoke/member/neu/specs/reviews');
+//   const page = 1;
 
-  //   const page = 1;
+//   var responseBody = ApiService().getHtmlContent(continueURL);
 
-  //   var responseBody = ApiService().getHtmlContent(continueURL);
+//   var res = await http.post(baseUrl, headers: headers, body: data);
 
-  //   var res = await http.post(baseUrl, headers: headers, body: data);
+//   var body = jsonDecode(utf8.decode(res.bodyBytes));
 
-  //   var body = jsonDecode(utf8.decode(res.bodyBytes));
+//   final document = parse(body["output"]["reviews"]);
 
-  //   final document = parse(body["output"]["reviews"]);
+//   int index = 0;
 
-  //   int index = 0;
+//   var reviewText = document.getElementById("review-preview-toggle-$index");
+//   print('reviewText: ${reviewText!.text.trim()}');
 
-  //   var reviewText = document.getElementById("review-preview-toggle-$index");
-  //   print('reviewText: ${reviewText!.text.trim()}');
+//   var reviewUser = document.getElementsByClassName(
+//       "wt-text-truncate.wt-text-body-small.wt-text-gray");
+//   print('reviewUser: ${reviewUser[index].text}');
 
-  //   var reviewUser = document.getElementsByClassName(
-  //       "wt-text-truncate.wt-text-body-small.wt-text-gray");
-  //   print('reviewUser: ${reviewUser[index].text}');
+//   var reviewRating =
+//       document.querySelectorAll('input[name="rating"]').sublist(2);
+//   print('reviewRating: ${reviewRating[index].attributes["value"]}');
 
-  //   var reviewRating =
-  //       document.querySelectorAll('input[name="rating"]').sublist(2);
-  //   print('reviewRating: ${reviewRating[index].attributes["value"]}');
+//   var reviewDate = document.getElementsByClassName(
+//       "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
+//   print(
+//       'reviewDate: ${DateFormat('MMM d, yyyy').parse(reviewDate[index].text)}');
 
-  //   var reviewDate = document.getElementsByClassName(
-  //       "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1");
-  //   print(
-  //       'reviewDate: ${DateFormat('MMM d, yyyy').parse(reviewDate[index].text)}');
-
-  //   var reviewProduct = document.querySelectorAll('a[data-review-link]');
-  //   print('reviewProduct: ${reviewProduct[index].text}');
-  //   print('reviewProductLink: ${reviewProduct[index].attributes["href"]}');
-  // }
+//   var reviewProduct = document.querySelectorAll('a[data-review-link]');
+//   print('reviewProduct: ${reviewProduct[index].text}');
+//   print('reviewProductLink: ${reviewProduct[index].attributes["href"]}');
+// }
