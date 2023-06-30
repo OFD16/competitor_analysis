@@ -1,7 +1,3 @@
-import 'package:web_scraper/web_scraper.dart';
-
-import 'package:html/parser.dart' show parse;
-
 import 'package:fluent_ui/fluent_ui.dart';
 
 import './index.dart' as screens;
