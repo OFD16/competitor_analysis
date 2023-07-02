@@ -23,7 +23,9 @@ const mainUrl = 'https://www.etsy.com/';
 String? shopId = '';
 String? listingId = '';
 String? continueURL = '';
-double? pageCount = 1;
+int pageCount = 1;
+
+String? pageHtml = '';
 
 class _DashboardScreenState extends State<DashboardScreen> {
   TextEditingController urlController = TextEditingController(
@@ -37,17 +39,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   models.Product product = models.Product();
 
-  List<models.Review> reviewList = [];
-
   Future getUrlDocument(String continueURL) async {
     setState(() {
       loading = true;
-      continueURL = utils.Extractter().extractUrl(urlController.text);
+      progressCounter = 0.0;
+      counter = 0;
     });
     if (continueURL.isNotEmpty) {
       Response res = await ApiService().getHtmlDocument(continueURL);
 
       var document = parse(res.body);
+
+      var price = '';
+      var discountPrice = '';
+      var discountRate = '';
 
       var newShopId = document
           .querySelectorAll('div[data-shop-id]')[0]
@@ -63,12 +68,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
       var description = utils.Extractter().extractTextContent(
           document, Constants.descriptionClassName); //Açıklama
 
-      var price = utils.Extractter()
-          .extractTextContent(document, Constants.priceClassName); //Tam fiyat
+      bool isDiscountExist = document
+          .querySelectorAll(
+              'div.wt-display-flex-xs.wt-align-items-center.wt-flex-wrap')[0]
+          .getElementsByClassName('wt-text-caption wt-text-gray')
+          .isNotEmpty;
+      if (isDiscountExist) {
+        price = utils.Extractter()
+            .extractTextContent(document, Constants.priceClassName);
 
-      var discountPrice = utils.Extractter()
-          .extractTextContent(document, Constants.discountPriceClassName)
-          .replaceAll(RegExp(r'^Price:\s*'), ''); //Indirimli fiyat
+        discountPrice = utils.Extractter()
+            .extractTextContent(document, Constants.discountPriceClassName)
+            .replaceAll(RegExp(r'^Price:\s*'), ''); //Indirimli fiyat
+
+        discountRate = utils.Extractter().extractDiscountRate(
+            document, Constants.discountRateClassName, '(', ')',
+            removeOffText: true); //Indirim oranı
+      } else {
+        //İndirim yoksa fiyatı çekeceğimiz kısım burası
+        price = utils.Extractter()
+            .extractTextContent(document, Constants.discountPriceClassName)
+            .replaceAll(RegExp(r'^Price:\s*'), ''); //Indirimli fiyat
+      }
 
       var shopOwnerName = utils.Extractter().extractTextContent(
           document, Constants.shopOwnerNameClassName); //Mağaza sahibinin adı
@@ -76,11 +97,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       var shopName = utils.Extractter().extractTextContent(
           document, Constants.shopNameClassName); //Mağaza adı
 
-      var shopCommentCount = utils.Extractter().extractTextContent(
-          document, Constants.shopReviewCountClassName); //Mağaza yorum sayısı
+      int shopCommentCount = int.parse(utils.Extractter().extractTextContent(
+          document, Constants.shopReviewCountClassName)); //Mağaza yorum sayısı
 
-      var productCommentCount = utils.Extractter().extractTextContent(
-          document, Constants.productReviewCountClassName); //Ürün yorum sayısı
+      int productCommentCount = int.parse(utils.Extractter().extractTextContent(
+          document, Constants.productReviewCountClassName)); //Ürün yorum sayısı
 
       var shopImageUrl = utils.Extractter().extractAttribute(document,
           Constants.shopImageUrlClassName, 'src'); //Mağaza resim linki
@@ -93,13 +114,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       var shopUrl = utils.Extractter().extractAttribute(
           document, Constants.shopUrlClassName, 'href'); //Mağazanın linki
 
-      var discountRate = utils.Extractter().extractDiscountRate(
-          document, Constants.discountRateClassName, '(', ')',
-          removeOffText: true); //Indirim oranı
-
       setState(() {
-        pageCount = (int.parse(productCommentCount) / 4.0);
-        print('pagecount $pageCount');
+        pageCount = productCommentCount ~/ 4;
+        print('pagecount ${pageCount}');
       });
 
       product = models.Product(
@@ -116,73 +133,169 @@ class _DashboardScreenState extends State<DashboardScreen> {
           shopUrl: shopUrl,
           discountRate: discountRate);
 
-      print('listingId:$listingId');
-      print('shopId:$shopId');
-
       setState(() {
         shopId = newShopId;
         listingId = newListingId;
         loading = false;
       });
+
+      print('listingId:$listingId');
       return null;
     }
   }
 
-  Future getReviewsDocument(String prodcutUrl) async {
+  Future getComments(String prodcutUrl, int pageCount) async {
+    List<models.Review> reviewList = [];
     setState(() {
       loading = true;
-      progressCounter = 100 * (counter / 4) / 28;
     });
-    print(counter);
-    for (int i = 0; i < pageCount!.toInt(); i++) {
-      Response res = await ApiService()
-          .getReviews(pageCount!.toInt(), prodcutUrl, listingId!, shopId!);
+
+    for (int i = 1; i <= pageCount; i++) {
+      Response res =
+          await ApiService().getReviews(i, prodcutUrl, listingId!, shopId!);
 
       var body = jsonDecode(utf8.decode(res.bodyBytes));
 
       final document = parse(body["output"]["reviews"]);
 
-      var reviewsLength =
-          document.querySelectorAll('input[name="rating"]').sublist(1).length;
-      print('reviewsLength: $reviewsLength');
-      for (int index = 0; index < reviewsLength; index++) {
-        models.Review review =
-            models.Review('', 0, '', '', DateTime(DateTime.january), '');
+      var reviewsElementsList =
+          document.getElementsByClassName('wt-grid__item-xs-12 review-card');
+      // print('reviewsElementsList: ${reviewsElementsList}');
+      // print('pageCount: ${i}');
+      setState(() {
+        progressCounter = 100 * (counter / 4) / pageCount;
+      });
+      for (int i = 0; i < reviewsElementsList.length; i++) {
+        var reviewItem = reviewsElementsList[i];
+        models.Review review = models.Review(
+          text: '',
+          rating: 0,
+          title: '',
+          path: '',
+          date: DateTime(DateTime.february),
+          reviewer: '',
+          subRatings: [],
+        );
 
-        var reviewText = document
-            .getElementById("review-preview-toggle-$index")
-            ?.text
+        if (i == 0) {
+          var producSumOfRates = double.parse(document
+              .getElementsByClassName('wt-display-inline-block wt-mr-xs-1')[0]
+              .getElementsByTagName('input')[0]
+              .attributes['value']
+              .toString()); // ürünün genel puanı
+        }
+
+        var reviewElement = reviewsElementsList[i];
+
+        var reviewElementRate = double.parse(reviewElement
+            .getElementsByTagName('input')[0]
+            .attributes['value']
+            .toString());
+
+        var reviewElementOwner = 'null';
+        bool isOwnerClassNameExist = reviewElement
+            .getElementsByClassName('wt-content-toggle__trigger-wrapper')
+            .isNotEmpty;
+        if (isOwnerClassNameExist) {
+          reviewElementOwner = reviewElement
+              .getElementsByClassName('wt-content-toggle__trigger-wrapper')[0]
+              .getElementsByTagName('span')[0]
+              .text
+              .split("by")[1]
+              .trim();
+        } else {
+          reviewElementOwner = reviewElement
+              .getElementsByClassName('wt-text-caption wt-text-gray')[1]
+              .getElementsByTagName('a')[0]
+              .text
+              .trim();
+        }
+
+        var reviewElementText = '';
+        bool isReviewTextExist = reviewElement
+            .getElementsByClassName('wt-text-truncate--multi-line')
+            .isNotEmpty;
+        if (isReviewTextExist) {
+          reviewElementText = reviewElement
+              .getElementsByClassName('wt-text-truncate--multi-line')[0]
+              .text
+              .trim();
+        }
+
+        var reviewElementTitle = reviewElement
+            .getElementsByClassName(
+                'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0')[0]
+            .text
             .trim();
-        // var reviewUser = document
-        //     .getElementsByClassName(
-        //         "wt-text-truncate.wt-text-body-small.wt-text-gray")[index]
-        //     .text
-        //     .trim();
-        var reviewRating = int.parse(document
-            .querySelectorAll('input[name="rating"]')
-            .sublist(1)[index]
-            .attributes['value']!);
-        // var reviewDate = DateFormat('MMM d, yyyy').parse(document
-        //     .getElementsByClassName(
-        //         "wt-text-body-small wt-text-gray wt-align-self-flex-start wt-no-wrap wt-text-right-xs wt-flex-grow-xs-1")[index]
-        //     .text);
-        var reviewProductTitle =
-            document.querySelectorAll('a[data-review-link]')[index].text;
-        var reviewProductPath = document
-            .querySelectorAll('a[data-review-link]')[index]
-            .attributes["href"];
+
+        var reviewElementPath = reviewElement
+            .getElementsByClassName(
+                'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0')[0]
+            .attributes['href']
+            .toString();
+
+        RegExp dateRegex = RegExp(r'\b\w{3} \d{1,2}, \d{4}\b');
+        var reviewElementDate = DateFormat('MMM d, yyyy').parse(
+            dateRegex.stringMatch(reviewElement
+                .getElementsByClassName(
+                    'wt-display-flex-xs wt-align-items-center wt-pt-xs-1')[0]
+                .getElementsByClassName('wt-text-caption wt-text-gray')[0]
+                .text
+                .trim())!);
+
+        //Subratings çekildi
+        List<Map<String, dynamic>> subRatings = [];
+        var isSubRatingsExist = reviewItem
+            .getElementsByClassName('wt-flex-md-1 min-width-0')
+            .isNotEmpty;
+
+        if (isSubRatingsExist) {
+          var subRatingsLength = reviewItem
+              .getElementsByClassName('wt-flex-md-1 min-width-0')[0]
+              .getElementsByClassName('subrating-item')
+              .length;
+
+          for (int j = 0; j < subRatingsLength; j++) {
+            var subRating = reviewItem
+                .getElementsByClassName('wt-flex-md-1 min-width-0')[0]
+                .getElementsByClassName('subrating-item')[j]
+                .getElementsByClassName(
+                    'wt-text-left-xs wt-width-full wt-text-body-small--tight')[0]
+                .text;
+            var rate = double.parse(reviewItem
+                .getElementsByClassName('wt-flex-md-1 min-width-0')[0]
+                .getElementsByClassName('subrating-item')[j]
+                .getElementsByClassName('wt-pl-xs-2 wt-flex-xs-1')[0]
+                .text);
+
+            subRatings.add({'subRating': subRating, 'rate': rate});
+          }
+
+          print('subratings: $subRatings');
+        }
 
         setState(() {
           loading = false;
-          review = models.Review(reviewText, reviewRating, reviewProductTitle,
-              reviewProductPath, DateTime(DateTime.july), 'reviewUser');
+          review = models.Review(
+            text: reviewElementText,
+            rating: reviewElementRate,
+            title: reviewElementTitle,
+            path: reviewElementPath,
+            date: reviewElementDate,
+            reviewer: reviewElementOwner,
+            subRatings: subRatings,
+          );
           reviewList.add(review);
-          print('reviewList: $reviewList + uzunluğu: ${reviewList.length}');
           counter++;
-          progressCounter = 100 * (counter / 4) / 28;
-          print('counter: $counter');
+          progressCounter = 100 * (counter / 4) / pageCount;
+          print('çekilen yorum sayısı anlık: $counter');
         });
       }
+
+      setState(() {
+        product.reviews = reviewList;
+        loading = false;
+      });
     }
   }
 
@@ -229,9 +342,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(width: 10),
                         Text('${progressCounter.toInt()}   '),
                         Expanded(
-                          child: progressCounter == 100
+                          child: progressCounter >= 95 && progressCounter <= 100
                               ? ProgressBar(
-                                  value: progressCounter,
+                                  value: 100,
                                   strokeWidth: 8,
                                   activeColor: Colors.green)
                               : ProgressBar(
@@ -245,22 +358,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             style: TextStyle(height: 1.8),
                           ),
                           onPressed: () {
-                            getReviewsDocument(urlController.text);
+                            getComments(urlController.text, pageCount);
                           },
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
+                    // SelectableText(pageHtml!),
+                    Button(
+                      child: Text(
+                        'Yorumların sayısını kontrol : ${product.reviews.length}',
+                        style: TextStyle(height: 1.8),
+                      ),
+                      onPressed: () {
+                        print('Yorum sayısı = ${product.reviews.length}');
+                      },
+                    ),
                     ListView.builder(
                       shrinkWrap: true,
-                      itemCount: reviewList.length,
+                      itemCount: product.reviews.length,
                       itemBuilder: (BuildContext context, int index) {
-                        if (index < reviewList.length) {
+                        if (index < product.reviews.length) {
                           return components.ReviewCard(
-                            review: reviewList[0],
+                            review: product.reviews[index],
+                            order: index + 1,
                           );
                         } else {
-                          return Text(''); // or any other placeholder widget
+                          return const Text(
+                              ''); // or any other placeholder widget
                         }
                       },
                     ),

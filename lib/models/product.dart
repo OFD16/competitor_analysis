@@ -1,3 +1,5 @@
+import './index.dart' show Review;
+
 class Product {
   String? id;
   String? title;
@@ -10,9 +12,9 @@ class Product {
   String? shopOwnerName;
   String? shopUrl;
   String? shopName;
-  String? productCommentCount;
-  String? shopCommentCount;
-  List<String?> reviews;
+  int? productCommentCount;
+  int? shopCommentCount;
+  List<Review?> reviews;
 
   Product({
     this.id,

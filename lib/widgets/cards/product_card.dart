@@ -34,8 +34,12 @@ class ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Fiyat: ${product?.price ?? '?'}'),
-              Text('İndirim Oranı: ${product?.discountRate ?? '?'}'),
-              Text('İndirimli Fiyat: ${product?.discountPrice ?? '?'}'),
+              product!.discountPrice != ''
+                  ? Text('İndirim Oranı: ${product?.discountRate ?? '?'}')
+                  : const Text(''),
+              product!.discountPrice != ''
+                  ? Text('İndirimli Fiyat: ${product?.discountPrice ?? '?'}')
+                  : const Text(''),
             ],
           ),
           trailing: Column(
