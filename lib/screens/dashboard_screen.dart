@@ -38,7 +38,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int counter = 0;
   double progressCounter = 0.0;
 
-
   models.Product product = models.Product();
 
   Future getUrlDocument(String continueURL) async {
@@ -148,8 +147,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
-
   Future getComments(String prodcutUrl, int pageCount) async {
     List<models.Review> reviewList = [];
     setState(() {
@@ -166,8 +163,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       var reviewsElementsList =
           document.getElementsByClassName('wt-grid__item-xs-12 review-card');
-      // print('reviewsElementsList: ${reviewsElementsList}');
-      // print('pageCount: ${i}');
+      print('reviewsElementsList: ${reviewsElementsList}');
+      print('pageCount: ${i}');
       setState(() {
         progressCounter = 100 * (counter / 4) / pageCount;
       });
@@ -202,6 +199,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bool isOwnerClassNameExist = reviewElement
             .getElementsByClassName('wt-content-toggle__trigger-wrapper')
             .isNotEmpty;
+
+        var isOwnerClassNameExist2 = reviewElement
+            .getElementsByClassName('wt-text-caption wt-text-gray')[1]
+            .getElementsByTagName('a')
+            .isNotEmpty;
+
+        print('isOwnerClassNameExist2: ${isOwnerClassNameExist2}');
         if (isOwnerClassNameExist) {
           reviewElementOwner = reviewElement
               .getElementsByClassName('wt-content-toggle__trigger-wrapper')[0]
@@ -209,11 +213,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               .text
               .split("by")[1]
               .trim();
-        } else {
+        } else if (isOwnerClassNameExist2) {
           reviewElementOwner = reviewElement
               .getElementsByClassName('wt-text-caption wt-text-gray')[1]
               .getElementsByTagName('a')[0]
               .text
+              .trim();
+        } else {
+          reviewElementOwner = reviewElement
+              .getElementsByClassName('wt-text-caption wt-text-gray')[1]
+              .getElementsByTagName('span')[0]
+              .text
+              .split("by")[1]
               .trim();
         }
 
@@ -234,11 +245,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             .text
             .trim();
 
-        var reviewElementPath = reviewElement
-            .getElementsByClassName(
-                'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0')[0]
-            .attributes['href']
-            .toString();
+        var reviewElementPath = '';
+        if (reviewElementOwner == 'Inactive') {
+          reviewElementPath = reviewElement
+              .getElementsByClassName(
+                  'wt-text-link wt-text-caption wt-text-truncate wt-text-gray wt-width-half wt-pb-xs-1 wt-pb-md-0')[0]
+              .attributes['href']
+              .toString();
+        }
 
         RegExp dateRegex = RegExp(r'\b\w{3} \d{1,2}, \d{4}\b');
         var reviewElementDate = DateFormat('MMM d, yyyy').parse(
@@ -370,7 +384,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    // SelectableText(pageHtml!),
                     Button(
                       child: Text(
                         'Yorumların sayısını kontrol : ${product.reviews.length}',
@@ -380,6 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         print('Yorum sayısı = ${product.reviews.length}');
                       },
                     ),
+                    // SelectableText(pageHtml!),
                     ListView.builder(
                       shrinkWrap: true,
                       itemCount: product.reviews.length,
