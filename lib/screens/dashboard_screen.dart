@@ -98,11 +98,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       var shopName = utils.Extractter().extractTextContent(
           document, Constants.shopNameClassName); //Mağaza adı
 
-      int shopCommentCount = int.parse(utils.Extractter().extractTextContent(
-          document, Constants.shopReviewCountClassName)); //Mağaza yorum sayısı
+      int shopCommentCount = int.parse(document.body!
+          .getElementsByClassName(
+              'wt-badge wt-badge--status-02 wt-ml-xs-2 wt-nowrap')[0]
+          .text
+          .trim()
+          .replaceAll(',', '')
+          .trim()); //Mağaza yorum sayısı
 
-      int productCommentCount = int.parse(utils.Extractter().extractTextContent(
-          document, Constants.productReviewCountClassName)); //Ürün yorum sayısı
+      int productCommentCount = int.parse(document.body!
+          .getElementsByClassName('wt-badge wt-badge--status-02 wt-ml-xs-2')[0]
+          .text
+          .trim()
+          .replaceAll(',', '')
+          .trim()); //Ürün yorum sayısı
 
       var shopImageUrl = utils.Extractter().extractAttribute(document,
           Constants.shopImageUrlClassName, 'src'); //Mağaza resim linki
@@ -168,6 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         progressCounter = 100 * (counter / 4) / pageCount;
       });
+
       for (int i = 0; i < reviewsElementsList.length; i++) {
         var reviewItem = reviewsElementsList[i];
         models.Review review = models.Review(
@@ -205,7 +215,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             .getElementsByTagName('a')
             .isNotEmpty;
 
-        print('isOwnerClassNameExist2: ${isOwnerClassNameExist2}');
         if (isOwnerClassNameExist) {
           reviewElementOwner = reviewElement
               .getElementsByClassName('wt-content-toggle__trigger-wrapper')[0]
@@ -220,12 +229,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               .text
               .trim();
         } else {
-          reviewElementOwner = reviewElement
+          var reviewElementOwner = reviewElement
               .getElementsByClassName('wt-text-caption wt-text-gray')[1]
               .getElementsByTagName('span')[0]
               .text
-              .split("by")[1]
               .trim();
+
+          var ownerSplit = reviewElementOwner.split("by");
+          if (ownerSplit.length > 1) {
+            reviewElementOwner = ownerSplit[1].trim();
+          }
         }
 
         var reviewElementText = '';
@@ -311,6 +324,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           print('çekilen yorum sayısı anlık: $counter');
         });
       }
+
       setState(() {
         product.reviews = reviewList;
         loading = false;
@@ -393,7 +407,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         print('Yorum sayısı = ${product.reviews.length}');
                       },
                     ),
-                    // SelectableText(pageHtml!),
+                    //SelectableText(pageHtml!),
                     ListView.builder(
                       shrinkWrap: true,
                       itemCount: product.reviews.length,
