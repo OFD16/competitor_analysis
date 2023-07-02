@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:competitor_analysis/providers/product_provider.dart';
 import 'package:competitor_analysis/services/api_service.dart';
 import "package:fluent_ui/fluent_ui.dart";
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
 import '../utils/index.dart' as utils;
 import '../models/index.dart' as models;
@@ -35,7 +37,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int counter = 0;
   double progressCounter = 0.0;
 
-  late models.Product etsyObj = models.Product();
 
   models.Product product = models.Product();
 
@@ -133,6 +134,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           shopUrl: shopUrl,
           discountRate: discountRate);
 
+      Provider.of<ProductProvider>(context, listen: false).setProduct(product);
+
       setState(() {
         shopId = newShopId;
         listingId = newListingId;
@@ -143,6 +146,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return null;
     }
   }
+
+
 
   Future getComments(String prodcutUrl, int pageCount) async {
     List<models.Review> reviewList = [];

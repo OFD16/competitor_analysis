@@ -1,6 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:competitor_analysis/my_app.dart' as app;
+import 'package:provider/provider.dart';
 import './screens/index.dart' as screens;
+import 'providers/product_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,12 +14,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FluentApp(
-      title: 'Competitor Analyzer',
-      theme: app.AppTheme.lightTheme, // Set light theme as the default
-      darkTheme: app.AppTheme.darkTheme, // Set dark theme
-      debugShowCheckedModeBanner: false,
-      home: const screens.HomeScreen(),
+    return MultiProvider(
+      providers:  [
+        ChangeNotifierProvider<ProductProvider>(create: (_) => ProductProvider())],
+      child: FluentApp(
+        title: 'Competitor Analyzer',
+        theme: app.AppTheme.lightTheme, // Set light theme as the default
+        darkTheme: app.AppTheme.darkTheme, // Set dark theme
+        debugShowCheckedModeBanner: false,
+        home: const screens.HomeScreen(),
+      ),
     );
   }
 }

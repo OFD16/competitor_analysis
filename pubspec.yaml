@@ -45,7 +45,7 @@ dependencies:
 
   dart_sentiment: ^0.0.9
   fl_chart: ^0.62.0
-
+  provider: ^6.0.5
 
   # firebase_auth: ^4.6.3
 dev_dependencies: 
