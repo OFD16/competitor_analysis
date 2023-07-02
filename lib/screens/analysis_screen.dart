@@ -79,24 +79,12 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   void initState() {
     super.initState();
 
-    // Yorumlar geliyo ama error verıyor
+    List<models.Review> tempReviews =
+        Provider.of<ReviewProvider>(context, listen: false).getReviews;
 
-    // List<models.Review> tempReviews =Provider.of<ReviewProvider>(context, listen: false).getReviews;
-    // if(tempReviews.length != 0){
-    //   for(int i = 0; i< tempReviews.length; i ++ ){
-    //     analyze(tempReviews[i].text);
-    //   }
-    // }else{
-    //   for (var comment in comments) {
-    //     analyze(comment);
-    //   }
-    // }
-    //hayyy
-
-    for (var comment in comments) {
-      analyze(comment);
+    for (var review in tempReviews) {
+      if (review.text != '') analyze(review.text);
     }
-
 
     chartData = [
       {
@@ -127,14 +115,14 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<models.Review> tempReviews =Provider.of<ReviewProvider>(context, listen: false).getReviews;
+    List<models.Review> tempReviews =
+        Provider.of<ReviewProvider>(context, listen: false).getReviews;
 
     return ScaffoldPage(
       padding: const EdgeInsets.all(0),
       content: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(tempReviews[16].text),
           Chart(data: chartData, onPress: onPressChart),
           const SizedBox(height: 40),
           Text(
