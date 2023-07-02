@@ -1,6 +1,9 @@
 import 'package:dart_sentiment/dart_sentiment.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:provider/provider.dart';
+import '../models/index.dart' as models;
+import '../providers/comments_provider.dart';
 
 class AnalysisScreen extends StatefulWidget {
   const AnalysisScreen({super.key});
@@ -55,7 +58,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   late List<Map<String, dynamic>> chartData = [];
 
   void analyze(String text) {
-    final result = sentiment.analysis(text);
+    final result = sentiment.analysis(text, emoji: true);
 
     if (result["comparative"] < 0) {
       negative.add({"comment": text, "comparative": result["comparative"]});
@@ -75,9 +78,25 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Yorumlar geliyo ama error verıyor
+
+    // List<models.Review> tempReviews =Provider.of<ReviewProvider>(context, listen: false).getReviews;
+    // if(tempReviews.length != 0){
+    //   for(int i = 0; i< tempReviews.length; i ++ ){
+    //     analyze(tempReviews[i].text);
+    //   }
+    // }else{
+    //   for (var comment in comments) {
+    //     analyze(comment);
+    //   }
+    // }
+    //
+    
     for (var comment in comments) {
       analyze(comment);
     }
+
 
     chartData = [
       {
@@ -108,11 +127,14 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<models.Review> tempReviews =Provider.of<ReviewProvider>(context, listen: false).getReviews;
+
     return ScaffoldPage(
       padding: const EdgeInsets.all(0),
       content: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Text(tempReviews[16].text),
           Chart(data: chartData, onPress: onPressChart),
           const SizedBox(height: 40),
           Text(

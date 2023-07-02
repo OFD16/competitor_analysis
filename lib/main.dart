@@ -1,3 +1,4 @@
+import 'package:competitor_analysis/providers/comments_provider.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:competitor_analysis/my_app.dart' as app;
 import 'package:provider/provider.dart';
@@ -16,7 +17,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers:  [
-        ChangeNotifierProvider<ProductProvider>(create: (_) => ProductProvider())],
+        ChangeNotifierProvider<ProductProvider>(create: (_) => ProductProvider()),
+        ChangeNotifierProvider<ReviewProvider>(create: (_) => ReviewProvider()),
+
+      ],
       child: FluentApp(
         title: 'Competitor Analyzer',
         theme: app.AppTheme.lightTheme, // Set light theme as the default

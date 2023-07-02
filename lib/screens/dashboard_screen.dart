@@ -6,6 +6,7 @@ import "package:fluent_ui/fluent_ui.dart";
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/comments_provider.dart';
 import '../utils/index.dart' as utils;
 import '../models/index.dart' as models;
 import '../widgets/index.dart' as components;
@@ -296,12 +297,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           print('çekilen yorum sayısı anlık: $counter');
         });
       }
-
       setState(() {
         product.reviews = reviewList;
         loading = false;
       });
     }
+    Provider.of<ReviewProvider>(context, listen: false).setReviews(reviewList);
   }
 
   @override
