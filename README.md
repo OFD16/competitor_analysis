@@ -31,3 +31,7 @@ For some issues:
 For some other issues:
 - If your Flutter version is 3.10.5 adn Dart SDK version is 3.0.5 then you should downgrade to 3.7.11 or 3.7.8 it depends on your system.
   ```flutter downgrade <flutter-version>```
+
+
+## Getting Build on Devices
+- ```flutter build windows``` for Windows build
