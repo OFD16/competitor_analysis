@@ -35,3 +35,4 @@ For some other issues:
 
 ## Getting Build on Devices
 - ```flutter build windows``` for Windows build
+      builds the exe file which is located in ```yourprojectpath/your_project_build/windows/runner/Release```
