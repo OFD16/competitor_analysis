@@ -1,8 +1,11 @@
+import 'package:competitor_analysis/models/product.dart';
+import 'package:competitor_analysis/providers/product_provider.dart';
 import 'package:dart_sentiment/dart_sentiment.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:provider/provider.dart';
 import '../models/index.dart' as models;
+import '../widgets/index.dart' show ProductCard;
 import '../providers/comments_provider.dart';
 
 class AnalysisScreen extends StatefulWidget {
@@ -81,7 +84,15 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
     List<models.Review> tempReviews =
         Provider.of<ReviewProvider>(context, listen: false).getReviews;
-
+    print('---------------------------------------}');
+    print('date: ${tempReviews[4].date}');
+    print('path: ${tempReviews[4].path}');
+    print('rating: ${tempReviews[4].rating}');
+    print('reviewer: ${tempReviews[4].reviewer}');
+    print('subRatings: ${tempReviews[4].subRatings}');
+    print('text: ${tempReviews[4].text}');
+    print('title: ${tempReviews[4].title}');
+    print('---------------------------------------}');
     for (var review in tempReviews) {
       if (review.text != '') analyze(review.text);
     }
@@ -118,11 +129,16 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     List<models.Review> tempReviews =
         Provider.of<ReviewProvider>(context, listen: false).getReviews;
 
+    Product product =
+        Provider.of<ProductProvider>(context, listen: false).getProduct;
+
     return ScaffoldPage(
       padding: const EdgeInsets.all(0),
       content: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          ProductCard(product: product),
+          const SizedBox(height: 20),
           Chart(data: chartData, onPress: onPressChart),
           const SizedBox(height: 40),
           Text(

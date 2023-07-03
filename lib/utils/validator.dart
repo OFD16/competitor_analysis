@@ -1,4 +1,5 @@
 import 'package:http/http.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Validator {
   static String? validateEmail(String? value) {
@@ -20,6 +21,19 @@ class Validator {
     if (value.length < 6) {
       return 'Password must be at least 6 characters long.';
     }
+    return null;
+  }
+
+  Future<String?> validateURL(String? value) async {
+    if (value == null || value.isEmpty) {
+      print('ASdfg');
+      return 'URL is required.';
+    }
+
+    if (!await canLaunchUrl(Uri.parse(value))) {
+      return 'Invalid URL format.';
+    }
+
     return null;
   }
 

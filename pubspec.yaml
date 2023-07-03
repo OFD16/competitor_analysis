@@ -39,6 +39,7 @@ dependencies:
   fluent_ui:
   http:
   html:
+  url_launcher: ^6.1.11
   # web_scraper: 
   # webview_flutter:              #for mobil
   # webview_windows: ^0.2.2       #for desktop

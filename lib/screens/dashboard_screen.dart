@@ -30,10 +30,11 @@ int pageCount = 1;
 
 String? pageHtml = '';
 
+bool isDocScrapped = false;
+bool isReviewsScrapped = false;
+
 class _DashboardScreenState extends State<DashboardScreen> {
-  TextEditingController urlController = TextEditingController(
-      text:
-          'https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1');
+  TextEditingController urlController = TextEditingController();
   bool loading = false;
   int counter = 0;
   double progressCounter = 0.0;
@@ -45,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       loading = true;
       progressCounter = 0.0;
       counter = 0;
+      isDocScrapped = false;
     });
     if (continueURL.isNotEmpty) {
       Response res = await ApiService().getHtmlDocument(continueURL);
@@ -127,6 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         pageCount = productCommentCount ~/ 4;
         print('pagecount ${pageCount}');
+        isDocScrapped = true;
       });
 
       product = models.Product(
@@ -160,6 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     List<models.Review> reviewList = [];
     setState(() {
       loading = true;
+      isReviewsScrapped = false;
     });
 
     for (int i = 1; i <= pageCount; i++) {
@@ -328,6 +332,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         product.reviews = reviewList;
         loading = false;
+        isReviewsScrapped = true;
       });
     }
     Provider.of<ReviewProvider>(context, listen: false).setReviews(reviewList);
@@ -335,6 +340,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    models.Product providerProduct =
+        Provider.of<ProductProvider>(context, listen: false).getProduct;
     return SingleChildScrollView(
       child: Center(
         child: Padding(
@@ -346,6 +353,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Expanded(
                     child: TextFormBox(
                       controller: urlController,
+                      placeholder:
+                          'https://www.etsy.com/listing/1228308510/notion-template-personal-planner-notion?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=notion+planner+2023&ref=sr_gallery-1-2&pro=1&sts=1&organic_search_click=1',
                     ),
                   ),
                 ],
@@ -354,7 +363,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (!loading)
                 Column(
                   children: [
-                    components.ProductCard(product: product),
+                    components.ProductCard(product: providerProduct),
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -364,13 +373,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             'İlk Dökümanı Çek',
                             style: TextStyle(height: 1.8),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             setState(() {
                               continueURL = utils.Extractter()
                                   .extractUrl(urlController.text);
                             });
-
-                            getUrlDocument(continueURL!);
+                            if (await utils.Validator()
+                                    .validateURL(urlController.text) ==
+                                null) {
+                              getUrlDocument(continueURL!);
+                            }
                           },
                         ),
                         const SizedBox(width: 10),
@@ -392,7 +404,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             style: TextStyle(height: 1.8),
                           ),
                           onPressed: () {
-                            getComments(urlController.text, pageCount);
+                            if (isDocScrapped) {
+                              getComments(urlController.text, pageCount);
+                            }
                           },
                         ),
                       ],
