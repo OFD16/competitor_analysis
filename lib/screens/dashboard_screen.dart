@@ -342,6 +342,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     models.Product providerProduct =
         Provider.of<ProductProvider>(context, listen: false).getProduct;
+
+    List<models.Review> providerReviews =
+        Provider.of<ReviewProvider>(context, listen: false).getReviews;
     return SingleChildScrollView(
       child: Center(
         child: Padding(
@@ -414,7 +417,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 20),
                     Button(
                       child: Text(
-                        'Yorumların sayısını kontrol : ${product.reviews.length}',
+                        'Anlık yorum sayısı : ${providerReviews.length}',
                         style: TextStyle(height: 1.8),
                       ),
                       onPressed: () {
@@ -424,11 +427,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     //SelectableText(pageHtml!),
                     ListView.builder(
                       shrinkWrap: true,
-                      itemCount: product.reviews.length,
+                      itemCount: providerReviews.length,
                       itemBuilder: (BuildContext context, int index) {
-                        if (index < product.reviews.length) {
+                        if (index < providerReviews.length) {
                           return components.ReviewCard(
-                            review: product.reviews[index],
+                            review: providerReviews[index],
                             order: index + 1,
                           );
                         } else {
