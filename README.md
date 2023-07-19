@@ -2,6 +2,12 @@
 
 This is a Etsy, competitor analysis program.
 
+## Demo
+
+Insert gif or link to demo
+
+https://youtu.be/gQ6gG1FE00Q
+
 ## Getting Started
 ```
 flutter run -d emulator-5554
